@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, ShoppingBag, MapPin, Star, Building2, Car, Camera, Briefcase, Calendar, ChevronLeft, ChevronRight, Share2, Heart, Phone, Mail, CheckCircle2, Clock, Plus, ArrowRight, User, X, BedDouble, Bath, Ruler, Fuel, Settings2, ShieldCheck, Eye, EyeOff, LayoutGrid, Zap, Image as ImageIcon, MessageCircle, Edit3, Trash2, Navigation, MousePointerClick, Check, SlidersHorizontal, ArrowDownUp, Flag, ThumbsUp, CalendarDays, Shield, Armchair, Monitor, Home as HomeIcon,  MessageSquare, Layers, ArrowUpDown, Tag, Bike, Music, Shirt, Hammer, Copy, BarChart3, AlertCircle, RefreshCw, MoreVertical } from 'lucide-react';
+import { Search, Filter, ShoppingBag, MapPin, Star, Building2, Car, Camera, Briefcase, Calendar, ChevronLeft, ChevronRight, Share2, Heart, Phone, Mail, CheckCircle2, Clock, Plus, ArrowRight, User, X, BedDouble, Bath, Ruler, Fuel, Settings2, ShieldCheck, Eye, EyeOff, LayoutGrid, Zap, Image as ImageIcon, MessageCircle, Edit, Trash2, Navigation, MousePointerClick, Check, SlidersHorizontal, ArrowDownUp, Flag, ThumbsUp, CalendarDays, Shield, Armchair, Monitor, Home as HomeIcon,  MessageSquare, Layers, ArrowUpDown, Tag, Bike, Music, Shirt, Hammer, Copy, BarChart3, AlertCircle, RefreshCw, MoreVertical } from 'lucide-react';
 import { Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { DataService, ChatService, UserService } from '../services/mockData';
 import { AssetType, RentCycle, Building, BaseAsset } from '../types';
@@ -341,7 +341,7 @@ const AssetCard: React.FC<{ item: any, onClick: () => void, isOwner?: boolean, o
                     </div>
                     {isOwner ? (
                         <div className="flex gap-1">
-                            <button onClick={(e) => { e.stopPropagation(); onEdit && onEdit(); }} className="p-1.5 bg-gray-100 rounded-full hover:bg-blue-50 text-gray-600 hover:text-blue-600"><Edit3 size={12}/></button>
+                            <button onClick={(e) => { e.stopPropagation(); onEdit && onEdit(); }} className="p-1.5 bg-gray-100 rounded-full hover:bg-blue-50 text-gray-600 hover:text-blue-600"><Edit size={12}/></button>
                             <button onClick={(e) => { e.stopPropagation(); onUnlist && onUnlist(); }} className="p-1.5 bg-gray-100 rounded-full hover:bg-red-50 text-gray-600 hover:text-red-600"><Trash2 size={12}/></button>
                         </div>
                     ) : (

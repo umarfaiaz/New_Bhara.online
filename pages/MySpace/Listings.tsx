@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Eye, EyeOff, Edit3, MoreVertical, Heart, RefreshCw, BarChart3, Globe } from 'lucide-react';
+import { Plus, Eye, EyeOff, Edit, MoreVertical, Heart, RefreshCw, BarChart3, Globe } from 'lucide-react';
 import { UserService, DataService } from '../../services/mockData';
 import { AssetType } from '../../types';
 
@@ -130,7 +130,7 @@ const Listings: React.FC = () => {
                                         onClick={() => handleEditInfo(item)} 
                                         className="flex-1 py-2 rounded-lg border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 flex items-center justify-center gap-1 transition-colors"
                                     >
-                                        <Edit3 size={14}/> Edit Info
+                                        <Edit size={14}/> Edit Info
                                     </button>
                                     <button 
                                         onClick={() => handleToggle(item.id, item.is_listed, item.realType)}

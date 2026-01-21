@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ChevronLeft, ChevronRight, CheckCircle2, X, Plus, Home, Car, Camera, Briefcase, 
   Bell, Check, FileText, Download, Share2, Calendar, Square, CheckSquare, 
-  Edit2, RefreshCcw, AlertCircle, Search, Send, Clock, Filter, ArrowUpRight, 
+  Edit, RefreshCcw, AlertCircle, Search, Send, Clock, Filter, ArrowUpRight, 
   Wallet, PieChart, MoreHorizontal, Printer, Zap, Trash2, ListChecks, Undo2,
   CircleDashed, Percent, CalendarDays, Share, TrendingUp
 } from 'lucide-react';
@@ -603,7 +603,7 @@ const Payments: React.FC = () => {
                   {isSelectionMode && (
                       <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left">
                           <button onClick={selectAll} className="text-[10px] bg-gray-100 px-2 py-1.5 rounded font-bold hover:bg-gray-200 whitespace-nowrap">Select All</button>
-                          <button onClick={handleBulkStatusChange} className="text-[10px] bg-black text-white px-2 py-1.5 rounded font-bold hover:bg-gray-800 flex items-center gap-1 whitespace-nowrap"><Edit2 size={12}/> Status</button>
+                          <button onClick={handleBulkStatusChange} className="text-[10px] bg-black text-white px-2 py-1.5 rounded font-bold hover:bg-gray-800 flex items-center gap-1 whitespace-nowrap"><Edit size={12}/> Status</button>
                           <button onClick={handleBulkAddCharge} className="text-[10px] bg-[#ff4b9a] text-white px-2 py-1.5 rounded font-bold hover:bg-pink-600 flex items-center gap-1 whitespace-nowrap"><Plus size={12}/> Charge</button>
                           <button onClick={handleBulkReminder} className="text-[10px] bg-blue-600 text-white px-2 py-1.5 rounded font-bold hover:bg-blue-700 flex items-center gap-1 whitespace-nowrap"><Send size={12}/> Remind</button>
                       </div>

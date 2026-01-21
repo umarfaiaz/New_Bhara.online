@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Bell, MessageCircle, ChevronLeft, MoreVertical, Send, Check, CheckCheck, Percent, AlertCircle, Info, Plus, Users, Building2, Briefcase, MapPin, UserPlus, LogOut, X, Phone, Video, Image as ImageIcon, Paperclip, Smile, Settings, Trash2, Edit2, Camera } from 'lucide-react';
+import { Search, Bell, MessageCircle, ChevronLeft, MoreVertical, Send, Check, CheckCheck, Percent, AlertCircle, Info, Plus, Users, Building2, Briefcase, MapPin, UserPlus, LogOut, X, Phone, Video, Image as ImageIcon, Paperclip, Smile, Settings, Trash2, Edit, Camera } from 'lucide-react';
 import { useNavigate, Routes, Route, useParams } from 'react-router-dom';
 import { ChatService, DataService } from '../services/mockData';
 import { ChatSession, ChatMessage } from '../types';
@@ -425,7 +425,7 @@ const GroupInfoModal: React.FC<{ chat: ChatSession, onClose: () => void, onUpdat
                         ) : (
                             <h2 className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
                                 {chat.name} 
-                                {isAdmin && <Edit2 size={16} className="text-gray-400 cursor-pointer hover:text-[#ff4b9a]" onClick={() => setIsEditing(true)}/>}
+                                {isAdmin && <Edit size={16} className="text-gray-400 cursor-pointer hover:text-[#ff4b9a]" onClick={() => setIsEditing(true)}/>}
                             </h2>
                         )}
                         <p className="text-sm text-gray-500">{chat.participants.length} Members • Created {new Date(chat.updatedAt).toLocaleDateString()}</p>

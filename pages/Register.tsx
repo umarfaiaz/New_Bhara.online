@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, ChevronLeft, Check, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, ChevronLeft, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Logo } from '../components/Logo';
 
 const Register: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
@@ -32,8 +32,8 @@ const Register: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
 
   return (
     <div className="min-h-screen bg-white flex flex-row-reverse">
-      {/* RIGHT SIDE - FORM (Reversed logic for visual balance) */}
-      <div className="flex-1 flex flex-col justify-center px-4 sm:px-12 lg:px-24 xl:px-32 relative z-10 bg-white">
+      {/* RIGHT SIDE - FORM */}
+      <div className="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-24 xl:px-32 relative z-10 bg-white">
         
         <button 
             onClick={() => navigate('/')} 
@@ -42,59 +42,59 @@ const Register: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
             <ChevronLeft size={24} />
         </button>
 
-        <div className="w-full max-w-md mx-auto space-y-8 py-10">
+        <div className="w-full max-w-md mx-auto space-y-8 py-10 animate-in slide-in-from-right-8 duration-700">
             <div className="space-y-2">
-                <div className="mb-6"><Logo size="lg"/></div>
-                <h1 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight">Create Account</h1>
+                <div className="mb-8"><Logo size="lg"/></div>
+                <h1 className="text-4xl font-black text-gray-900 tracking-tight leading-tight">Create Account</h1>
                 <p className="text-gray-500 text-lg">Join the smartest rental community today.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Name */}
-                <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-gray-900 uppercase tracking-wider ml-1">Full Name</label>
+                <div className="space-y-1.5 group">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1 group-focus-within:text-[#ff4b9a] transition-colors">Full Name</label>
                     <input
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({...formData, name: e.target.value})}
-                        className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-gray-900 font-medium focus:outline-none focus:bg-white focus:border-[#ff4b9a] focus:ring-4 focus:ring-[#ff4b9a]/10 transition-all placeholder:text-gray-400"
+                        className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-gray-900 font-bold focus:outline-none focus:bg-white focus:border-[#ff4b9a] focus:ring-4 focus:ring-[#ff4b9a]/10 transition-all placeholder:text-gray-300"
                         placeholder="e.g. Salim Uddin"
                     />
                 </div>
 
                 {/* Email */}
-                <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-gray-900 uppercase tracking-wider ml-1">Email Address</label>
+                <div className="space-y-1.5 group">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1 group-focus-within:text-[#ff4b9a] transition-colors">Email Address</label>
                     <input
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
-                        className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-gray-900 font-medium focus:outline-none focus:bg-white focus:border-[#ff4b9a] focus:ring-4 focus:ring-[#ff4b9a]/10 transition-all placeholder:text-gray-400"
+                        className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-gray-900 font-bold focus:outline-none focus:bg-white focus:border-[#ff4b9a] focus:ring-4 focus:ring-[#ff4b9a]/10 transition-all placeholder:text-gray-300"
                         placeholder="hello@example.com"
                     />
                 </div>
 
                 {/* Password Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-gray-900 uppercase tracking-wider ml-1">Password</label>
+                    <div className="space-y-1.5 group">
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1 group-focus-within:text-[#ff4b9a] transition-colors">Password</label>
                         <div className="relative">
                             <input
                                 type={showPassword ? "text" : "password"}
                                 value={formData.password}
                                 onChange={(e) => setFormData({...formData, password: e.target.value})}
-                                className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-gray-900 font-medium focus:outline-none focus:bg-white focus:border-[#ff4b9a] focus:ring-4 focus:ring-[#ff4b9a]/10 transition-all placeholder:text-gray-400"
+                                className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-gray-900 font-bold focus:outline-none focus:bg-white focus:border-[#ff4b9a] focus:ring-4 focus:ring-[#ff4b9a]/10 transition-all placeholder:text-gray-300"
                                 placeholder="••••••••"
                             />
                         </div>
                     </div>
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-gray-900 uppercase tracking-wider ml-1">Confirm</label>
+                    <div className="space-y-1.5 group">
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1 group-focus-within:text-[#ff4b9a] transition-colors">Confirm</label>
                         <input
                             type={showPassword ? "text" : "password"}
                             value={formData.confirm}
                             onChange={(e) => setFormData({...formData, confirm: e.target.value})}
-                            className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-gray-900 font-medium focus:outline-none focus:bg-white focus:border-[#ff4b9a] focus:ring-4 focus:ring-[#ff4b9a]/10 transition-all placeholder:text-gray-400"
+                            className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-gray-900 font-bold focus:outline-none focus:bg-white focus:border-[#ff4b9a] focus:ring-4 focus:ring-[#ff4b9a]/10 transition-all placeholder:text-gray-300"
                             placeholder="••••••••"
                         />
                     </div>
@@ -102,15 +102,18 @@ const Register: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
                 
                 {/* Show Pass Toggle Text */}
                 <div className="flex items-center justify-between ml-1">
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                        <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-[#ff4b9a] focus:ring-[#ff4b9a] cursor-pointer" onChange={() => setShowPassword(!showPassword)} checked={showPassword}/>
-                        <span className="text-xs font-bold text-gray-500 group-hover:text-gray-700 select-none">Show Password</span>
+                    <label className="flex items-center gap-2 cursor-pointer group select-none">
+                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${showPassword ? 'bg-[#ff4b9a] border-[#ff4b9a]' : 'bg-gray-100 border-gray-200'}`}>
+                            {showPassword && <CheckCircle2 size={12} className="text-white" />}
+                        </div>
+                        <input type="checkbox" className="hidden" onChange={() => setShowPassword(!showPassword)} checked={showPassword}/>
+                        <span className="text-xs font-bold text-gray-500 group-hover:text-gray-900 transition-colors">Show Password</span>
                     </label>
                 </div>
 
                 {error && (
-                    <div className="p-4 bg-red-50 text-red-600 text-sm font-bold rounded-2xl flex items-center gap-2 animate-in slide-in-from-top-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                    <div className="p-4 bg-red-50 text-red-600 text-sm font-bold rounded-2xl flex items-center gap-2 animate-in slide-in-from-top-2 border border-red-100">
+                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
                         {error}
                     </div>
                 )}
@@ -118,19 +121,19 @@ const Register: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-4 bg-[#ff4b9a] text-white font-bold rounded-2xl shadow-xl shadow-pink-500/20 hover:shadow-2xl hover:bg-pink-600 hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70 mt-2"
+                    className="w-full py-4 bg-[#ff4b9a] text-white font-bold rounded-2xl shadow-xl shadow-pink-500/20 hover:shadow-2xl hover:bg-pink-600 hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70 mt-2 text-lg"
                 >
                     {isLoading ? (
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     ) : (
-                        <>Create Free Account <Sparkles size={18} className="fill-white/20"/></>
+                        <>Create Free Account <Sparkles size={20} className="fill-white/20"/></>
                     )}
                 </button>
             </form>
 
             <p className="text-center text-gray-500 font-medium">
                 Already have an account?{' '}
-                <Link to="/login" className="text-[#2d1b4e] font-bold hover:underline">Log in</Link>
+                <Link to="/login" className="text-[#2d1b4e] font-bold hover:underline transition-colors">Log in</Link>
             </p>
         </div>
       </div>
@@ -144,34 +147,34 @@ const Register: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
                 className="w-full h-full object-cover"
                 alt="Car Background"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#2d1b4e]/90 to-[#2d1b4e]/70 mix-blend-multiply"></div>
+              <div className="absolute inset-0 bg-gradient-to-l from-[#2d1b4e]/95 to-[#2d1b4e]/60 mix-blend-multiply"></div>
           </div>
 
-          <div className="relative z-10 max-w-lg px-12">
-              <div className="mb-10 animate-in slide-in-from-left duration-700">
-                  <span className="inline-block px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white text-xs font-bold uppercase tracking-wider mb-6">
+          <div className="relative z-10 max-w-xl px-12">
+              <div className="mb-12 animate-in slide-in-from-left-10 duration-700">
+                  <span className="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-bold uppercase tracking-wider mb-6">
                       Join 5000+ Landlords
                   </span>
-                  <h2 className="text-5xl font-black text-white mb-6 leading-[1.1]">
+                  <h2 className="text-6xl font-black text-white mb-6 leading-[1.1] tracking-tight">
                       One Platform for <br/> All Your <span className="text-[#ff4b9a]">Rentals.</span>
                   </h2>
-                  <p className="text-lg text-gray-200 leading-relaxed">
+                  <p className="text-xl text-gray-200 leading-relaxed font-light">
                       From tracking payments to managing tenants and maintenance requests. Handle your buildings, cars, and gadgets in one place.
                   </p>
               </div>
 
-              <div className="space-y-4 animate-in slide-in-from-left duration-700 delay-200">
+              <div className="space-y-6 animate-in slide-in-from-left-10 duration-700 delay-200">
                   {[
                       "Automated Rent Collection & SMS",
                       "Expense & Profit Tracking",
                       "Digital Tenant Screening",
                       "Marketplace Listing Integration"
                   ].map((feat, i) => (
-                      <div key={i} className="flex items-center gap-3">
-                          <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center border border-green-500/50">
-                              <Check size={14} className="text-green-400"/>
+                      <div key={i} className="flex items-center gap-4 group">
+                          <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center border border-green-500/30 group-hover:bg-green-500/30 transition-colors">
+                              <CheckCircle2 size={20} className="text-green-400"/>
                           </div>
-                          <span className="text-white font-bold text-sm">{feat}</span>
+                          <span className="text-white font-bold text-lg tracking-wide">{feat}</span>
                       </div>
                   ))}
               </div>

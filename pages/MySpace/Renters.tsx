@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, MoreVertical, MessageCircle, Phone, Eye, ArrowLeft, Trash2, Edit2, X, AlertTriangle, Building2, ChevronRight, Car, Camera, Home, User, CreditCard, Users, Briefcase, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
+import { Search, Plus, MoreVertical, MessageCircle, Phone, Eye, ArrowLeft, Trash2, Edit, X, AlertTriangle, Building2, ChevronRight, Car, Camera, Home, User, CreditCard, Users, Briefcase, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DataService } from '../../services/mockData';
 import { Tenant, Flat, Building, Vehicle, Gadget, AssetType } from '../../types';

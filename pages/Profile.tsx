@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { User, Phone, Crown, Edit2, Languages, Mail, MessageSquare, CreditCard, Clock, HelpCircle, AlertOctagon, FileText, Shield, ChevronRight, X, CheckCircle2, Zap, ArrowRight, LogOut, Heart, ShoppingBag, MapPin, Star } from 'lucide-react';
+import { User, Phone, Crown, Edit, Languages, Mail, MessageSquare, CreditCard, Clock, HelpCircle, AlertOctagon, FileText, Shield, ChevronRight, X, CheckCircle2, Zap, ArrowRight, LogOut, Heart, ShoppingBag, MapPin, Star } from 'lucide-react';
 import { UserService, DataService } from '../services/mockData';
 import { User as UserType } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -72,7 +72,7 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
             <section>
                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">Account</h3>
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <MenuItem icon={Edit2} label={t('profile_edit')} onClick={() => setActiveModal('edit')} />
+                    <MenuItem icon={Edit} label={t('profile_edit')} onClick={() => setActiveModal('edit')} />
                     <MenuItem icon={Heart} label="Saved Items" onClick={() => setActiveModal('wishlist')} />
                     <MenuItem icon={Languages} label={t('profile_lang')} value={language === 'bn' ? 'বাংলা' : 'English'} onClick={toggleLanguage} highlight />
                     <MenuItem icon={Mail} label={t('profile_contact')} onClick={() => window.open('mailto:support@bhara.online')} isLast />
