@@ -1,17 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, NavLink, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import Overview from './MySpace/Overview';
 import Renters from './MySpace/Renters';
 import Payments from './MySpace/Payments';
 import Inventory from './MySpace/Inventory';
-import Listings from './MySpace/Listings';
 import RenterOverview from './MySpace/RenterOverview';
 import Maintenance from './MySpace/Maintenance';
 import MyRental from './MySpace/MyRental';
 import RenterPayments from './MySpace/RenterPayments';
 import { Logo } from '../components/Logo';
-import { LayoutDashboard, Users, Receipt, Warehouse, Home, Wrench, Wallet, Globe } from 'lucide-react';
+import { LayoutDashboard, Users, Receipt, Box, Home, Wrench, Wallet } from 'lucide-react';
 
 const MySpace: React.FC = () => {
   const [role, setRole] = useState<'lender' | 'renter'>(() => {
@@ -29,10 +28,9 @@ const MySpace: React.FC = () => {
 
   const lenderTabs = [
     { label: 'Overview', path: '/myspace/overview', icon: LayoutDashboard },
-    { label: 'Listings', path: '/myspace/listings', icon: Globe },
+    { label: 'Assets', path: '/myspace/assets', icon: Box },
     { label: 'Renters', path: '/myspace/renters', icon: Users },
     { label: 'Payments', path: '/myspace/payments', icon: Receipt },
-    { label: 'Inventory', path: '/myspace/inventory', icon: Warehouse },
   ];
 
   const renterTabs = [
@@ -46,11 +44,7 @@ const MySpace: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full bg-gray-50">
-      {/* 
-          Sub-Header Configuration:
-          - Sticky top-0
-          - Enhanced spacing and alignment
-      */}
+      {/* Sub-Header Configuration */}
       <header className="bg-white/95 backdrop-blur-md sticky top-0 z-40 shadow-sm border-b border-gray-200 transition-all duration-300">
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 pb-0">
@@ -119,10 +113,13 @@ const MySpace: React.FC = () => {
             {role === 'lender' ? (
                 <>
                     <Route path="overview" element={<Overview />} />
-                    <Route path="listings" element={<Listings />} />
+                    <Route path="assets/*" element={<Inventory />} />
+                    {/* Redirect old routes */}
+                    <Route path="inventory/*" element={<Navigate to="/myspace/assets" />} />
+                    <Route path="listings/*" element={<Navigate to="/myspace/assets" />} />
+                    
                     <Route path="renters/*" element={<Renters />} />
                     <Route path="payments" element={<Payments />} />
-                    <Route path="inventory/*" element={<Inventory />} />
                 </>
             ) : (
                 <>

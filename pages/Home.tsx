@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, ArrowRight, TrendingUp, DollarSign, Star, Zap, PlayCircle, ChevronDown, Sparkles, Flame, Shield, Car, Camera, Home as HomeIcon, ChevronRight, ArrowUpRight, ShieldCheck, Users, Lock, Headphones, Smartphone, LayoutGrid, Building2, Bike, Briefcase, Calendar as CalendarIcon, Music } from 'lucide-react';
+import { Search, MapPin, ArrowRight, TrendingUp, DollarSign, Star, Zap, PlayCircle, ChevronDown, Sparkles, Flame, Shield, Car, Camera, Home as HomeIcon, ChevronRight, ArrowUpRight, ShieldCheck, Users, Lock, Headphones, Smartphone, LayoutGrid, Building2, Bike, Briefcase, Calendar as CalendarIcon, Music, Wrench, Armchair } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { CITIES } from '../constants';
 
@@ -169,14 +169,14 @@ const Home: React.FC = () => {
 
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {[
-                      { id: 'Real Estate', name: 'Apartments', count: '450+', icon: HomeIcon, color: 'text-blue-600', bg: 'bg-blue-50' },
-                      { id: 'Vehicles', name: 'Cars', count: '120+', icon: Car, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                      { id: 'Tech', name: 'Cameras & Gear', count: '300+', icon: Camera, color: 'text-purple-600', bg: 'bg-purple-50' },
-                      { id: 'Vehicles', name: 'Motorbikes', count: '80+', icon: Bike, color: 'text-orange-600', bg: 'bg-orange-50' },
-                      { id: 'Real Estate', name: 'Commercial', count: '50+', icon: Building2, color: 'text-cyan-600', bg: 'bg-cyan-50' },
-                      { id: 'Services', name: 'Events & Venues', count: '30+', icon: CalendarIcon, color: 'text-pink-600', bg: 'bg-pink-50' },
-                      { id: 'Services', name: 'Professionals', count: '200+', icon: Briefcase, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                      { id: 'Tech', name: 'Audio & Music', count: '150+', icon: Music, color: 'text-red-600', bg: 'bg-red-50' },
+                      { id: 'Real Estate', name: 'Family Homes', count: '450+', icon: HomeIcon, color: 'text-blue-600', bg: 'bg-blue-50' },
+                      { id: 'Real Estate', name: 'Bachelor Pads', count: '120+', icon: Armchair, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                      { id: 'Real Estate', name: 'Office Space', count: '50+', icon: Building2, color: 'text-cyan-600', bg: 'bg-cyan-50' },
+                      { id: 'Vehicles', name: 'Private Cars', count: '180+', icon: Car, color: 'text-orange-600', bg: 'bg-orange-50' },
+                      { id: 'Vehicles', name: 'Motorbikes', count: '90+', icon: Bike, color: 'text-red-600', bg: 'bg-red-50' },
+                      { id: 'Tech', name: 'DSLR Cameras', count: '300+', icon: Camera, color: 'text-purple-600', bg: 'bg-purple-50' },
+                      { id: 'Services', name: 'Event Venues', count: '30+', icon: CalendarIcon, color: 'text-pink-600', bg: 'bg-pink-50' },
+                      { id: 'Services', name: 'Handyman', count: '200+', icon: Wrench, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                   ].map((cat, i) => (
                       <div 
                         key={i} 
@@ -188,7 +188,7 @@ const Home: React.FC = () => {
                           </div>
                           <div>
                               <h3 className="font-bold text-gray-900 group-hover:text-[#ff4b9a] transition-colors">{cat.name}</h3>
-                              <p className="text-xs text-gray-500 font-medium">{cat.count} listings</p>
+                              <p className="text-xs text-gray-500 font-medium">{cat.count}</p>
                           </div>
                           <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0">
                               <ChevronRight size={16} className="text-gray-300"/>
@@ -226,7 +226,7 @@ const Home: React.FC = () => {
           </div>
       </section>
 
-      {/* 4. SUPPLY SIDE: Start Earning (Redesigned) */}
+      {/* 4. SUPPLY SIDE: Start Earning */}
       <section className="py-16 px-4">
           <div className="max-w-7xl mx-auto bg-gradient-to-br from-[#1a1a1a] to-[#2d1b4e] rounded-[3rem] p-8 md:p-20 relative overflow-hidden flex flex-col items-center justify-center text-center shadow-2xl">
               {/* Animated Glows */}
