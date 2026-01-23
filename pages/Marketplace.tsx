@@ -1,14 +1,26 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, ShoppingBag, MapPin, Star, Building2, Car, Camera, Briefcase, Calendar, ChevronLeft, ChevronRight, Share2, Heart, Phone, Mail, CheckCircle2, Clock, Plus, ArrowRight, User, X, BedDouble, Bath, Ruler, Fuel, Settings2, ShieldCheck, Eye, EyeOff, LayoutGrid, Zap, Image as ImageIcon, MessageCircle, Edit, Trash2, Navigation, MousePointerClick, Check, SlidersHorizontal, ArrowDownUp, Flag, ThumbsUp, CalendarDays, Shield, Armchair, Monitor, Home as HomeIcon,  MessageSquare, Layers, ArrowUpDown, Tag, Bike, Music, Shirt, Hammer, Copy, BarChart3, AlertCircle, RefreshCw, MoreVertical } from 'lucide-react';
+import { Search, Filter, ShoppingBag, MapPin, Star, Building2, Car, Camera, Briefcase, Calendar, ChevronLeft, ChevronRight, Share2, Heart, Phone, Mail, CheckCircle2, Clock, Plus, ArrowRight, User, X, BedDouble, Bath, Ruler, Fuel, Settings2, ShieldCheck, Eye, EyeOff, LayoutGrid, Zap, Image as ImageIcon, MessageCircle, Edit, Trash2, Navigation, MousePointerClick, Check, SlidersHorizontal, ArrowDownUp, Flag, ThumbsUp, CalendarDays, Shield, Armchair, Monitor, Home as HomeIcon,  MessageSquare, Layers, ArrowUpDown, Tag, Bike, Music, Shirt, Hammer, Copy, BarChart3, AlertCircle, RefreshCw, MoreVertical, Store, Percent, BookOpen, AlertOctagon, Flame, Droplets } from 'lucide-react';
 import { Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { DataService, ChatService, UserService } from '../services/mockData';
-import { AssetType, RentCycle, Building, BaseAsset } from '../types';
+import { AssetType, RentCycle, Building, BaseAsset, User as UserType } from '../types';
 import { Logo } from '../components/Logo';
 import { MARKETPLACE_CATEGORIES } from '../constants';
+import { useLanguage } from '../contexts/LanguageContext';
 
 // Helper for local auth check
 const isAuth = () => localStorage.getItem('bhara_auth') === 'true';
+
+// Helper to format location object to string
+const formatLocation = (loc: any) => {
+    if (!loc) return '';
+    if (typeof loc === 'string') return loc;
+    const parts = [];
+    if (loc.area) parts.push(loc.area);
+    if (loc.district) parts.push(loc.district);
+    if (parts.length === 0) return 'Bangladesh';
+    return parts.join(', ');
+};
 
 // --- MAIN WRAPPER ---
 const Marketplace: React.FC = () => {
@@ -21,11 +33,131 @@ const Marketplace: React.FC = () => {
   );
 };
 
+// --- ITEM DETAILS COMPONENT ---
+const ItemDetails: React.FC = () => {
+    const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
+    const { t } = useLanguage();
+    const [item, setItem] = useState<any>(null);
+
+    useEffect(() => {
+        if (id) {
+            const found = DataService.getMarketplaceItems(undefined, true).find((i: any) => i.id === id);
+            setItem(found);
+        }
+    }, [id]);
+
+    if (!item) return <div className="p-10 text-center text-gray-500">{t('mkt_no_items')}</div>;
+
+    return (
+        <div className="bg-white min-h-screen pb-20">
+             <div className="flex items-center gap-3 p-4 border-b sticky top-0 bg-white/90 backdrop-blur-md z-30">
+                 <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-full"><ChevronLeft size={24} /></button>
+                 <span className="font-bold text-lg truncate">{item.name}</span>
+             </div>
+
+             <div className="max-w-5xl mx-auto p-4 md:p-8">
+                 <div className="grid md:grid-cols-2 gap-8">
+                     <div className="aspect-[4/3] bg-gray-100 rounded-3xl overflow-hidden relative">
+                         <img src={item.images?.[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa'} className="w-full h-full object-cover"/>
+                     </div>
+                     
+                     <div className="space-y-8">
+                         <div>
+                             <div className="flex items-center gap-2 mb-2">
+                                <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-bold uppercase tracking-wider">{item.category}</span>
+                                {item.is_listed && <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1"><CheckCircle2 size={12}/> {t('item_verified')}</span>}
+                             </div>
+                             <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight">{item.name}</h1>
+                             <p className="text-gray-500 font-medium mt-2 flex items-center gap-1"><MapPin size={16}/> {typeof item.location === 'string' ? item.location : `${item.location?.area}, ${item.location?.district}`}</p>
+                         </div>
+                         
+                         <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                             <p className="text-xs font-bold text-gray-400 uppercase mb-1">{t('item_rent')}</p>
+                             <div className="flex items-baseline gap-2">
+                                 <span className="text-4xl font-black text-[#ff4b9a]">{item.displayPrice}</span>
+                                 <span className="text-gray-400 font-bold text-sm">/ {item.period}</span>
+                             </div>
+                         </div>
+
+                         <div>
+                             <h3 className="font-bold text-gray-900 mb-3 text-lg">{t('item_about')}</h3>
+                             <p className="text-gray-600 leading-relaxed whitespace-pre-line">{item.description || "No description provided."}</p>
+                         </div>
+
+                         {/* Action Bar */}
+                         <div className="flex gap-4 pt-4 border-t border-gray-100">
+                             <button 
+                                onClick={() => {
+                                    ChatService.startChat(item.user_id, `Hi, I'm interested in ${item.name}`);
+                                    navigate('/inbox');
+                                }} 
+                                className="flex-1 py-4 bg-[#2d1b4e] text-white rounded-2xl font-bold shadow-xl hover:bg-[#3a2366] active:scale-95 transition-all flex items-center justify-center gap-2"
+                             >
+                                 <MessageCircle size={20}/> {t('item_chat_owner')}
+                             </button>
+                             <button className="p-4 bg-gray-100 rounded-2xl hover:bg-gray-200 transition-colors">
+                                 <Heart size={24} className="text-gray-600"/>
+                             </button>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+        </div>
+    );
+};
+
+// --- USER PROFILE MODAL (REUSABLE) ---
+export const UserProfileModal: React.FC<{ userId: string, onClose: () => void }> = ({ userId, onClose }) => {
+    const { t } = useLanguage();
+    const [user, setUser] = useState<UserType | null>(null);
+    useEffect(() => {
+        // Mock fetching user
+        const u = UserService.getUserById(userId);
+        setUser(u as UserType);
+    }, [userId]);
+
+    if (!user) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
+            <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative">
+                <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"><X size={20}/></button>
+                <div className="flex flex-col items-center">
+                    <div className="w-24 h-24 rounded-full p-1 border-2 border-[#ff4b9a] mb-4">
+                        <img src={user.avatar || 'https://i.pravatar.cc/150'} className="w-full h-full rounded-full object-cover"/>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">{user.name}</h3>
+                    <p className="text-sm text-gray-500 mb-2">{user.role === 'lender' ? 'Verified Owner' : 'Member'}</p>
+                    <div className="flex gap-2 mb-6">
+                        <span className="px-3 py-1 bg-green-50 text-green-700 text-[10px] font-bold uppercase rounded-full flex items-center gap-1"><ShieldCheck size={12}/> ID Verified</span>
+                        <span className="px-3 py-1 bg-yellow-50 text-yellow-700 text-[10px] font-bold uppercase rounded-full flex items-center gap-1"><Star size={12}/> 4.8 Rating</span>
+                    </div>
+                    <div className="w-full grid grid-cols-2 gap-4 border-t border-gray-100 pt-4">
+                        <div className="text-center">
+                            <p className="text-lg font-black text-gray-900">12</p>
+                            <p className="text-xs text-gray-400 font-bold uppercase">{t('item_listings')}</p>
+                        </div>
+                        <div className="text-center border-l border-gray-100">
+                            <p className="text-lg font-black text-gray-900">2y</p>
+                            <p className="text-xs text-gray-400 font-bold uppercase">{t('item_member_since')}</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="w-full mt-6 py-3 bg-[#2d1b4e] text-white font-bold rounded-xl shadow-lg active:scale-95 transition-transform">
+                        {t('item_close')}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // --- MARKETPLACE GRID & LISTINGS ---
 const MarketplaceGrid: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const state = (location.state as any) || {};
+    const { t } = useLanguage();
     
     // State
     const [searchTerm, setSearchTerm] = useState(state.search || '');
@@ -52,8 +184,9 @@ const MarketplaceGrid: React.FC = () => {
     const filteredItems = allItems.filter((item: any) => {
         if (activeTab === 'Saved' && !wishlist.includes(item.id)) return false;
 
+        const locationStr = formatLocation(item.location);
         const matchesSearch = !searchTerm || item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                              item.location?.toLowerCase().includes(searchTerm.toLowerCase());
+                              locationStr.toLowerCase().includes(searchTerm.toLowerCase());
         
         let matchesCategory = true;
         if (selectedCategory !== 'All') {
@@ -94,46 +227,68 @@ const MarketplaceGrid: React.FC = () => {
         <div className="min-h-screen bg-gray-50 pb-20">
              {/* Header */}
              <div className="bg-white sticky top-0 z-30 shadow-sm safe-top transition-all">
-                 <div className="px-4 py-3 flex items-center gap-3 border-b border-gray-50">
-                    <button onClick={() => navigate('/home')} className="p-2.5 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-700 transition-colors shrink-0">
-                        <HomeIcon size={20}/>
-                    </button>
-                     <div className="flex-1 relative">
-                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18}/>
+                 
+                 {/* Row 1: Logo & Search */}
+                 <div className="px-4 py-3 flex items-center justify-between gap-4 border-b border-gray-50">
+                    <div onClick={() => navigate('/home')} className="cursor-pointer shrink-0">
+                        <Logo size="sm" />
+                    </div>
+                     <div className="max-w-xs w-full relative ml-auto">
+                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16}/>
                          <input 
                             type="text" 
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Search cars, flats, cameras..." 
-                            className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-[#ff4b9a]/20 transition-all text-sm font-medium"
+                            placeholder={t('mkt_search_placeholder')} 
+                            className="w-full pl-9 pr-4 py-2 bg-gray-100 rounded-full outline-none focus:ring-2 focus:ring-[#ff4b9a]/20 transition-all text-sm font-medium"
                          />
                      </div>
-                     <button 
-                        onClick={() => setShowFilters(!showFilters)} 
-                        className={`p-2.5 rounded-xl transition-colors shrink-0 ${showFilters ? 'bg-[#ff4b9a] text-white shadow-lg' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                     >
-                         <SlidersHorizontal size={20}/>
-                     </button>
-                     <button 
-                        onClick={() => navigate('/myspace/listings')} 
-                        className="hidden sm:flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-gray-200 transition-all shrink-0"
-                     >
-                         My Listings
-                     </button>
-                     <button 
-                        onClick={() => navigate('/marketplace/post')} 
-                        className="hidden sm:flex items-center gap-2 bg-[#2d1b4e] text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-md hover:bg-black transition-all shrink-0"
-                     >
-                         <Plus size={18}/> Post Ad
-                     </button>
+                 </div>
+
+                 {/* Row 2: Controls (Modes | Highlighted Actions | Filter) */}
+                 <div className="px-4 py-2 flex items-center justify-between gap-3 overflow-x-auto scrollbar-hide border-b border-gray-50">
+                     {/* Modes */}
+                     <div className="flex bg-gray-100 p-1 rounded-lg shrink-0">
+                         <button onClick={() => setActiveTab('Browse')} className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${activeTab === 'Browse' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}>{t('mkt_browse')}</button>
+                         <button onClick={() => setActiveTab('Saved')} className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${activeTab === 'Saved' ? 'bg-white shadow-sm text-[#ff4b9a]' : 'text-gray-500'}`}>{t('mkt_saved')}</button>
+                     </div>
+
+                     {/* Right Actions - REDESIGNED */}
+                     <div className="flex items-center gap-2 shrink-0">
+                         {/* Highlighted 'Post Ad' Button */}
+                         <button 
+                            onClick={() => navigate('/marketplace/post')} 
+                            className="flex items-center gap-1.5 bg-[#2d1b4e] text-white px-3.5 py-2 rounded-xl font-bold text-xs shadow-md hover:bg-black transition-all active:scale-95"
+                         >
+                             <Plus size={14}/> {t('mkt_post_ad')}
+                         </button>
+                         
+                         {/* 'My Listings' Button */}
+                         <button 
+                            onClick={() => navigate('/myspace/assets')} 
+                            className="flex items-center gap-1.5 bg-white border border-gray-200 text-gray-700 px-3.5 py-2 rounded-xl font-bold text-xs hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95"
+                         >
+                             <User size={14}/> {t('mkt_my_ads')}
+                         </button>
+
+                         <div className="w-px h-6 bg-gray-200 mx-1"></div>
+                         
+                         {/* Filter Button */}
+                         <button 
+                            onClick={() => setShowFilters(!showFilters)} 
+                            className={`p-2 rounded-xl transition-colors border ${showFilters ? 'bg-[#ff4b9a] border-[#ff4b9a] text-white shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                         >
+                             <SlidersHorizontal size={16}/>
+                         </button>
+                     </div>
                  </div>
                  
-                 {/* Filters Panel */}
+                 {/* Filters Panel (Conditional) */}
                  {showFilters && (
                      <div className="px-4 py-4 bg-white border-b border-gray-100 animate-in slide-in-from-top duration-200">
                          <div className="flex flex-col sm:flex-row gap-4">
                              <div className="flex-1">
-                                 <label className="text-[10px] font-bold text-gray-400 uppercase mb-1.5 block">Sort By</label>
+                                 <label className="text-[10px] font-bold text-gray-400 uppercase mb-1.5 block">{t('mkt_sort_by')}</label>
                                  <div className="flex bg-gray-100 p-1 rounded-lg">
                                      {[
                                          { id: 'newest', label: 'Newest' },
@@ -151,7 +306,7 @@ const MarketplaceGrid: React.FC = () => {
                                  </div>
                              </div>
                              <div className="flex-1">
-                                 <label className="text-[10px] font-bold text-gray-400 uppercase mb-1.5 block">Price Range (৳)</label>
+                                 <label className="text-[10px] font-bold text-gray-400 uppercase mb-1.5 block">{t('mkt_price_range')} (৳)</label>
                                  <div className="flex gap-2">
                                      <input 
                                         type="number" 
@@ -173,34 +328,27 @@ const MarketplaceGrid: React.FC = () => {
                      </div>
                  )}
 
-                 {/* View Tabs & Categories */}
-                 <div className="flex items-center gap-4 px-4 pt-3 pb-1 overflow-x-auto scrollbar-hide">
-                     <div className="flex bg-gray-100 p-1 rounded-xl shrink-0">
-                         <button onClick={() => setActiveTab('Browse')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'Browse' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}>Browse</button>
-                         <button onClick={() => setActiveTab('Saved')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'Saved' ? 'bg-white shadow-sm text-[#ff4b9a]' : 'text-gray-500'}`}>Saved</button>
-                     </div>
-                     <div className="w-px h-6 bg-gray-200 shrink-0"></div>
-                     <div className="flex gap-2">
-                        {categories.map(cat => (
-                            <button 
-                                key={cat}
-                                onClick={() => setSelectedCategory(cat)}
-                                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${selectedCategory === cat ? 'bg-[#2d1b4e] text-white border-[#2d1b4e] shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
-                            >
-                                {cat}
-                            </button>
-                        ))}
-                     </div>
+                 {/* Row 3: Categories */}
+                 <div className="px-4 py-2 flex gap-2 overflow-x-auto scrollbar-hide border-b border-gray-50">
+                    {categories.map(cat => (
+                        <button 
+                            key={cat}
+                            onClick={() => setSelectedCategory(cat)}
+                            className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${selectedCategory === cat ? 'bg-[#2d1b4e] text-white border-[#2d1b4e] shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                        >
+                            {cat}
+                        </button>
+                    ))}
                  </div>
 
-                 {/* Sub Categories (Contextual) */}
+                 {/* Row 4: Sub Categories (Contextual) */}
                  {subCategories.length > 0 && (
-                     <div className="px-4 pb-3 pt-2 flex gap-2 overflow-x-auto scrollbar-hide animate-in fade-in slide-in-from-left duration-300">
+                     <div className="px-4 py-2 flex gap-2 overflow-x-auto scrollbar-hide bg-gray-50/50">
                          {subCategories.map(sub => (
                              <button 
                                 key={sub}
                                 onClick={() => setSelectedSubCategory(sub)}
-                                className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all ${selectedSubCategory === sub ? 'bg-[#ff4b9a]/10 text-[#ff4b9a] border border-[#ff4b9a]/20' : 'bg-gray-50 text-gray-500 border border-transparent hover:bg-gray-100'}`}
+                                className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all ${selectedSubCategory === sub ? 'bg-[#ff4b9a] text-white shadow-sm' : 'bg-white border border-gray-200 text-gray-500 hover:border-gray-300'}`}
                              >
                                  {sub}
                              </button>
@@ -209,9 +357,9 @@ const MarketplaceGrid: React.FC = () => {
                  )}
                  
                  {/* Results Count Bar */}
-                 <div className="px-4 py-2 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
-                     <p className="text-[10px] font-bold text-gray-400 uppercase">{filteredItems.length} Results found</p>
-                     {searchTerm && <button onClick={() => setSearchTerm('')} className="text-[10px] font-bold text-[#ff4b9a] hover:underline">Clear Search</button>}
+                 <div className="px-4 py-2 bg-white border-b border-gray-50 flex justify-between items-center">
+                     <p className="text-[10px] font-bold text-gray-400 uppercase">{filteredItems.length} {t('mkt_results')}</p>
+                     {searchTerm && <button onClick={() => setSearchTerm('')} className="text-[10px] font-bold text-[#ff4b9a] hover:underline">{t('mkt_clear_search')}</button>}
                  </div>
              </div>
 
@@ -229,70 +377,51 @@ const MarketplaceGrid: React.FC = () => {
                  {filteredItems.length === 0 && (
                      <div className="col-span-full text-center py-20">
                          <ShoppingBag size={48} className="mx-auto text-gray-300 mb-4"/>
-                         <p className="text-gray-500 font-medium">{activeTab === 'Saved' ? 'No saved items yet.' : 'No items found matching criteria.'}</p>
-                         {activeTab === 'Browse' && <button onClick={() => { setSelectedCategory('All'); setSearchTerm(''); setPriceRange({min:'',max:''}); }} className="mt-4 text-[#ff4b9a] font-bold text-sm">Reset Filters</button>}
+                         <p className="text-gray-500 font-medium">{activeTab === 'Saved' ? t('mkt_no_saved') : t('mkt_no_items')}</p>
+                         {activeTab === 'Browse' && <button onClick={() => { setSelectedCategory('All'); setSearchTerm(''); setPriceRange({min:'',max:''}); }} className="mt-4 text-[#ff4b9a] font-bold text-sm">{t('mkt_reset')}</button>}
                      </div>
                  )}
-             </div>
-
-             {/* Mobile FAB for Post Ad */}
-             <div className="md:hidden fixed bottom-24 right-5 z-40 flex flex-col gap-3">
-                 <button onClick={() => navigate('/myspace/listings')} className="bg-white text-gray-700 w-12 h-12 rounded-full shadow-lg border border-gray-100 flex items-center justify-center hover:scale-105 transition-all">
-                     <User size={20}/>
-                 </button>
-                 <button onClick={() => navigate('/marketplace/post')} className="bg-[#ff4b9a] text-white w-14 h-14 rounded-full shadow-xl shadow-pink-500/30 flex items-center justify-center hover:scale-105 active:scale-90 transition-all">
-                     <Plus size={28}/>
-                 </button>
              </div>
         </div>
     );
 };
 
 const AssetCard: React.FC<{ item: any, onClick: () => void, isOwner?: boolean, onEdit?: () => void, onUnlist?: () => void, isWishlisted?: boolean, onToggleWishlist?: (e: any) => void }> = ({ item, onClick, isOwner, onEdit, onUnlist, isWishlisted, onToggleWishlist }) => {
-    const isInstant = item.booking_type === 'instant';
+    // New Flags based on updates
+    const isInstant = item.booking_type === 'Instant';
+    const weeklyDiscount = item.marketplace_settings?.discounts?.weekly;
+    const monthlyDiscount = item.marketplace_settings?.discounts?.monthly;
+    const hasDiscount = (weeklyDiscount > 0 || monthlyDiscount > 0);
+    const charges = item.charges || {};
+    const customCharges = charges.customCharges || [];
+
+    // Calculate Price Logic for Card
+    const baseRent = parseInt(item.displayPrice.replace(/[^0-9]/g, '')) || 0;
+    let totalPrice = baseRent;
+    
+    // If Daily, add mandatory daily charges (e.g. driver) to total shown
+    if (item.period === 'Daily') {
+        if (charges.driverFee) totalPrice += charges.driverFee;
+    }
+
+    // Discount Calculation
+    let discountedPrice: number | null = null;
+    let applicableDiscount = 0;
+    if (item.period === 'Monthly') applicableDiscount = monthlyDiscount;
+    else if (item.period === 'Weekly') applicableDiscount = weeklyDiscount;
+    
+    if (applicableDiscount > 0) {
+        discountedPrice = totalPrice - (totalPrice * applicableDiscount / 100);
+    }
+
     let subLabel = item.category;
     let badgeColor = "bg-gray-100 text-gray-600";
     if (item.assetType === 'Vehicle') { subLabel = item.type; badgeColor = "bg-indigo-50 text-indigo-600"; }
     if (item.assetType === 'Residential') { subLabel = 'Apartment'; badgeColor = "bg-blue-50 text-blue-600"; }
+    if (item.assetType === 'Commercial') { subLabel = 'Commercial'; badgeColor = "bg-cyan-50 text-cyan-600"; }
     if (item.assetType === 'Gadget') { subLabel = item.category; badgeColor = "bg-purple-50 text-purple-600"; }
     if (item.assetType === 'Service') { subLabel = item.category; badgeColor = "bg-pink-50 text-pink-600"; }
-
-    const renderDetails = () => {
-        switch(item.assetType) {
-            case 'Residential':
-                return (
-                    <div className="flex items-center justify-between text-[10px] text-gray-500 font-medium mt-2">
-                        <span className="flex items-center gap-1"><BedDouble size={12}/> {item.details?.bedrooms || 3}</span>
-                        <span className="w-px h-3 bg-gray-300"></span>
-                        <span className="flex items-center gap-1"><Bath size={12}/> {item.details?.washrooms || 2}</span>
-                        <span className="w-px h-3 bg-gray-300"></span>
-                        <span className="flex items-center gap-1"><Ruler size={12}/> {item.details?.size || 1200}</span>
-                    </div>
-                );
-            case 'Vehicle':
-                return (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                        <span className="px-1.5 py-0.5 rounded-md bg-gray-50 text-[9px] font-bold text-gray-600 border border-gray-100">{item.details?.model_year || '2019'}</span>
-                        <span className="px-1.5 py-0.5 rounded-md bg-gray-50 text-[9px] font-bold text-gray-600 border border-gray-100">{item.details?.fuel || 'CNG'}</span>
-                        <span className="px-1.5 py-0.5 rounded-md bg-gray-50 text-[9px] font-bold text-gray-600 border border-gray-100">{item.details?.transmission || 'Auto'}</span>
-                    </div>
-                );
-            case 'Gadget':
-                return (
-                    <div className="flex items-center gap-1 text-[10px] text-gray-500 font-medium mt-2">
-                        <span className="truncate">{item.details?.brand}</span>
-                        <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-                        <span className="truncate">{item.details?.model}</span>
-                    </div>
-                );
-            default:
-                return (
-                    <div className="mt-2">
-                        <p className="text-[10px] text-gray-400 line-clamp-1">{item.listing_description || 'Verified Service'}</p>
-                    </div>
-                );
-        }
-    };
+    if (item.assetType === 'Skill') { subLabel = 'Skill'; badgeColor = "bg-teal-50 text-teal-600"; }
 
     return (
         <div 
@@ -309,7 +438,6 @@ const AssetCard: React.FC<{ item: any, onClick: () => void, isOwner?: boolean, o
                     <span className={`px-2 py-1 backdrop-blur-md rounded-md text-[8px] font-bold uppercase tracking-wide shadow-sm ${badgeColor}`}>
                         {subLabel}
                     </span>
-                    {/* Wishlist Button */}
                     {!isOwner && onToggleWishlist && (
                         <button onClick={onToggleWishlist} className="p-1.5 bg-white/20 backdrop-blur-md rounded-full hover:bg-white transition-colors group/heart">
                             <Heart size={14} className={isWishlisted ? "fill-[#ff4b9a] text-[#ff4b9a]" : "text-white group-hover/heart:text-[#ff4b9a]"} />
@@ -317,8 +445,13 @@ const AssetCard: React.FC<{ item: any, onClick: () => void, isOwner?: boolean, o
                     )}
                 </div>
                 {isInstant && (
-                    <div className="absolute bottom-2 left-2 px-1.5 py-0.5 bg-[#ff4b9a] text-white rounded text-[8px] font-bold uppercase tracking-wide shadow-sm flex items-center gap-0.5">
+                    <div className="absolute bottom-2 left-2 px-1.5 py-0.5 bg-yellow-400 text-black rounded text-[8px] font-bold uppercase tracking-wide shadow-sm flex items-center gap-0.5">
                         <Zap size={8} fill="currentColor"/> Instant
+                    </div>
+                )}
+                {hasDiscount && (
+                    <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-green-500 text-white rounded text-[8px] font-bold uppercase tracking-wide shadow-sm flex items-center gap-0.5">
+                        <Percent size={8}/> {Math.max(weeklyDiscount, monthlyDiscount)}% Off
                     </div>
                 )}
             </div>
@@ -330,14 +463,35 @@ const AssetCard: React.FC<{ item: any, onClick: () => void, isOwner?: boolean, o
                         <Star size={9} className="text-orange-400 fill-orange-400"/> 4.8
                     </div>
                 </div>
-                {renderDetails()}
+                
+                {/* CHARGES PILLS - NEW FEATURE */}
+                {(charges.serviceCharge > 0 || charges.gasFee > 0 || charges.driverFee > 0 || customCharges.length > 0) && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                        {charges.serviceCharge > 0 && <span className="px-1.5 py-0.5 bg-gray-50 border border-gray-100 rounded text-[9px] text-gray-500 font-medium">Service ৳{charges.serviceCharge}</span>}
+                        {charges.gasFee > 0 && <span className="px-1.5 py-0.5 bg-orange-50 border border-orange-100 rounded text-[9px] text-orange-600 font-medium flex items-center gap-0.5"><Flame size={8}/> Gas</span>}
+                        {charges.driverFee > 0 && <span className="px-1.5 py-0.5 bg-blue-50 border border-blue-100 rounded text-[9px] text-blue-600 font-medium">Driver +৳{charges.driverFee}</span>}
+                        {customCharges.length > 0 && (
+                            <span className="px-1.5 py-0.5 bg-purple-50 border border-purple-100 rounded text-[9px] text-purple-600 font-medium">
+                                +{customCharges.length} Extra
+                            </span>
+                        )}
+                    </div>
+                )}
+
                 <div className="mt-auto pt-3 flex items-center justify-between">
                     <div>
-                        <div className="flex items-baseline gap-0.5">
-                            <span className="text-sm font-extrabold text-gray-900">{item.displayPrice}</span>
+                        <div className="flex items-baseline gap-1">
+                            {discountedPrice !== null ? (
+                                <>
+                                    <span className="text-[10px] text-gray-400 line-through font-bold">৳{totalPrice.toLocaleString()}</span>
+                                    <span className="text-sm font-extrabold text-[#ff4b9a]">৳{discountedPrice.toLocaleString()}</span>
+                                </>
+                            ) : (
+                                <span className="text-sm font-extrabold text-gray-900">৳{totalPrice.toLocaleString()}</span>
+                            )}
                             <span className="text-[9px] text-gray-400 font-medium">{item.period}</span>
                         </div>
-                        <p className="text-[9px] text-gray-400 flex items-center gap-0.5 truncate max-w-[100px] mt-0.5"><MapPin size={8}/> {item.city || 'Dhaka'}</p>
+                        <p className="text-[9px] text-gray-400 flex items-center gap-0.5 truncate max-w-[100px] mt-0.5"><MapPin size={8}/> {formatLocation(item.location)}</p>
                     </div>
                     {isOwner ? (
                         <div className="flex gap-1">
@@ -355,247 +509,11 @@ const AssetCard: React.FC<{ item: any, onClick: () => void, isOwner?: boolean, o
     );
 };
 
-const ItemDetails: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate();
-    const item = DataService.getMarketplaceItems().find(i => i.id === id) as any;
-    const currentUser = UserService.getCurrentUser();
-    const [wishlist, setWishlist] = useState<string[]>(UserService.getWishlist());
-    const [recommendations, setRecommendations] = useState<any[]>([]);
-    
-    useEffect(() => {
-        setWishlist(UserService.getWishlist());
-        if(id) setRecommendations(DataService.getRecommendations(id));
-    }, [id]);
-
-    if (!item) return <div className="p-10 text-center">Item not found</div>;
-
-    const isOwner = item.user_id === currentUser.id;
-    const images = item.images?.length ? item.images : ['https://images.unsplash.com/photo-1560518883-ce09059eeffa'];
-    const owner = {
-        name: isOwner ? currentUser.name : 'Rafiqul Islam',
-        joined: 'Jan 2023',
-        avatar: isOwner ? currentUser.avatar : 'https://i.pravatar.cc/150?u=owner',
-        verified: true
-    };
-
-    const isWishlisted = wishlist.includes(item.id);
-
-    // Determine contact buttons based on preferences
-    const preferences: string[] = item.contact_preferences || ['chat', 'phone']; // Default
-    const showChat = preferences.includes('chat');
-    const showPhone = preferences.includes('phone');
-    
-    const handleAction = (type: 'chat' | 'request' | 'phone') => {
-        if (!isAuth()) { navigate('/login'); return; }
-        if (isOwner) { alert("This is your own listing."); return; }
-        
-        if (type === 'chat') {
-            ChatService.startChat(item.user_id, `Hi, I'm interested in ${item.name}.`);
-            navigate('/inbox');
-        } else if (type === 'phone') {
-            window.location.href = 'tel:01700000000'; // Mock number
-        } else {
-            alert(`Request sent for ${item.name}! Owner will contact you.`);
-        }
-    };
-
-    const handleShare = async () => {
-        const shareData = {
-            title: item.name,
-            text: `Check out ${item.name} on Bhara.online!`,
-            url: window.location.href,
-        };
-        try {
-            if (navigator.share) {
-                await navigator.share(shareData);
-            } else {
-                navigator.clipboard.writeText(window.location.href);
-                alert("Link copied to clipboard!");
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    const handleWishlist = () => {
-        const newList = UserService.toggleWishlist(item.id);
-        setWishlist([...newList]);
-    };
-
-    const renderKeySpecs = () => {
-        const specItem = (label: string, value: string | number, icon: any) => (
-            <div className="flex flex-col items-center justify-center p-3 bg-gray-50 rounded-xl border border-gray-100">
-                <div className="text-gray-400 mb-1">{icon}</div>
-                <span className="text-xs font-bold text-gray-900 text-center leading-tight">{value}</span>
-                <span className="text-[10px] text-gray-500 uppercase tracking-wide mt-0.5">{label}</span>
-            </div>
-        );
-
-        if (item.assetType === 'Residential') {
-            return (
-                <>
-                    {specItem('Bedrooms', item.details?.bedrooms || 3, <BedDouble size={18}/>)}
-                    {specItem('Bathrooms', item.details?.washrooms || 2, <Bath size={18}/>)}
-                    {specItem('Size', `${item.details?.size || 1200} sqft`, <Ruler size={18}/>)}
-                    {specItem('Floor', '4th', <Layers size={18}/>)}
-                </>
-            );
-        }
-        if (item.assetType === 'Vehicle') {
-            return (
-                <>
-                    {specItem('Model', item.details?.model_year || '2019', <CalendarDays size={18}/>)}
-                    {specItem('Fuel', item.details?.fuel || 'CNG', <Fuel size={18}/>)}
-                    {specItem('Seats', item.details?.seats || 4, <Armchair size={18}/>)}
-                    {specItem('Gear', item.details?.transmission || 'Auto', <Settings2 size={18}/>)}
-                </>
-            );
-        }
-        // Generic Specs for Gadgets and others
-        return (
-            <>
-                {specItem('Brand', item.details?.brand || 'Generic', <Star size={18}/>)}
-                {specItem('Model', item.details?.model || 'Std', <Camera size={18}/>)}
-                {specItem('Condition', 'Good', <ShieldCheck size={18}/>)}
-                {specItem('Verified', 'Yes', <CheckCircle2 size={18}/>)}
-            </>
-        );
-    };
-
-    return (
-        <div className="min-h-screen bg-white pb-24">
-            <div className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md px-4 py-3 flex justify-between items-center border-b border-gray-100">
-                <button onClick={() => navigate('/marketplace')} className="p-2 rounded-full hover:bg-gray-100 text-gray-700 transition-colors">
-                    <ChevronLeft size={22}/>
-                </button>
-                <div className="flex gap-2">
-                    <button onClick={handleShare} className="p-2 rounded-full hover:bg-gray-100 text-gray-700"><Share2 size={20}/></button>
-                    <button onClick={handleWishlist} className="p-2 rounded-full hover:bg-gray-100 text-gray-700">
-                        <Heart size={20} className={isWishlisted ? "fill-[#ff4b9a] text-[#ff4b9a]" : ""}/>
-                    </button>
-                </div>
-            </div>
-
-            {/* Gallery */}
-            <div className="h-[40vh] bg-gray-100 relative mt-[60px]">
-                <img src={images[0]} className="w-full h-full object-cover"/>
-                <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-md text-white px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
-                    <ImageIcon size={14}/> 1/{images.length}
-                </div>
-            </div>
-
-            <div className="px-5 py-6 -mt-6 rounded-t-[2rem] bg-white relative z-10">
-                <div className="flex justify-between items-start mb-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900 leading-tight mb-2">{item.name}</h1>
-                        <p className="text-sm text-gray-500 flex items-center gap-1">
-                            <MapPin size={16} className="text-[#ff4b9a]"/> {item.location}
-                        </p>
-                    </div>
-                    <div className="text-right">
-                        <p className="text-2xl font-black text-[#ff4b9a]">{item.displayPrice}</p>
-                        <p className="text-xs font-bold text-gray-400">{item.period}</p>
-                    </div>
-                </div>
-
-                {/* Key Specs */}
-                <div className="grid grid-cols-4 gap-2 mb-8">
-                    {renderKeySpecs()}
-                </div>
-
-                {/* Additional Charges */}
-                {item.additional_charges && item.additional_charges.length > 0 && (
-                    <div className="mb-8 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                        <h3 className="font-bold text-gray-900 mb-3 text-sm flex items-center gap-2">
-                            <Tag size={16} className="text-[#ff4b9a]"/> Other Charges
-                        </h3>
-                        <div className="space-y-2">
-                            {item.additional_charges.map((charge: any) => (
-                                <div key={charge.id} className="flex justify-between items-center text-xs">
-                                    <span className="text-gray-600 font-medium">{charge.name} <span className="text-[9px] text-gray-400">({charge.type})</span></span>
-                                    <span className="font-bold text-gray-900">৳{charge.amount}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Description */}
-                <div className="mb-8">
-                    <h3 className="font-bold text-gray-900 mb-3 text-sm">Description</h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                        {item.listing_description || 'No description provided. Contact the owner for more details.'}
-                    </p>
-                </div>
-
-                {/* Owner */}
-                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl mb-8 border border-gray-100">
-                    <div className="relative">
-                        <img src={owner.avatar} className="w-12 h-12 rounded-full object-cover border border-white shadow-sm" alt="Owner"/>
-                        {owner.verified && <CheckCircle2 size={16} className="absolute -bottom-1 -right-1 text-green-500 bg-white rounded-full"/>}
-                    </div>
-                    <div className="flex-1">
-                        <h4 className="font-bold text-gray-900 text-sm">{owner.name}</h4>
-                        <p className="text-[10px] text-gray-500">Member since {owner.joined}</p>
-                    </div>
-                    <button className="text-xs font-bold text-[#ff4b9a] hover:underline">View Profile</button>
-                </div>
-
-                {/* Recommendation Engine */}
-                {recommendations.length > 0 && (
-                    <div className="mb-8 pt-8 border-t border-gray-100">
-                        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><SparklesIcon size={16} className="text-yellow-500 fill-yellow-500"/> You Might Also Like</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            {recommendations.map(rec => (
-                                <div key={rec.id} onClick={() => navigate(`/marketplace/item/${rec.id}`)} className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer">
-                                    <div className="h-24 bg-gray-200">
-                                        <img src={rec.images?.[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa'} className="w-full h-full object-cover"/>
-                                    </div>
-                                    <div className="p-3">
-                                        <h4 className="font-bold text-xs text-gray-900 truncate">{rec.name}</h4>
-                                        <p className="text-[10px] text-gray-500">{rec.displayPrice}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Bottom Action Bar */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 flex gap-3 safe-bottom z-40">
-                {showPhone && (
-                    <button onClick={() => handleAction('phone')} className="p-4 bg-gray-100 rounded-xl text-gray-900 hover:bg-gray-200 transition-colors">
-                        <Phone size={20}/>
-                    </button>
-                )}
-                {showChat && (
-                    <button onClick={() => handleAction('chat')} className="flex-1 py-4 bg-[#2d1b4e] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-black transition-colors shadow-lg">
-                        <MessageCircle size={20}/> Chat Now
-                    </button>
-                )}
-                {!showChat && !showPhone && (
-                    <button onClick={() => handleAction('request')} className="flex-1 py-4 bg-[#ff4b9a] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-pink-600 transition-colors shadow-lg shadow-pink-200">
-                        Request Booking
-                    </button>
-                )}
-            </div>
-        </div>
-    );
-};
-
-// Helper for Recommendation Icon
-const SparklesIcon = ({size, className}: {size:number, className:string}) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-);
-
 // ... PostAd ...
 const PostAd: React.FC = () => {
     const navigate = useNavigate();
-    // Redirect to inventory config flow with flag
     useEffect(() => {
-        navigate('/myspace/inventory/select-type', { state: { returnTo: '/marketplace', isMarketplace: true } });
+        navigate('/myspace/rentals', { state: { openWizard: true, isMarketplace: true } });
     }, []);
     return null;
 };

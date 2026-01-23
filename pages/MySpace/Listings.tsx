@@ -32,19 +32,21 @@ const Listings: React.FC = () => {
 
     const handleEditInfo = (item: any) => {
         const realType = item.realType || item.assetType;
-        if (realType === 'Flat') {
-            navigate('/myspace/inventory/config-flat', { state: { editId: item.id, returnTo: '/myspace/listings' } });
-        } else if (realType === 'Vehicle') {
-            navigate('/myspace/inventory/config-vehicle', { state: { editId: item.id, returnTo: '/myspace/listings' } });
-        } else if (realType === 'Gadget') {
-            navigate('/myspace/inventory/config-gadget', { state: { editId: item.id, category: item.category, returnTo: '/myspace/listings' } });
-        } else if (realType === 'Service' || realType === 'Professional') {
-            navigate('/myspace/inventory/config-service', { state: { editId: item.id, returnTo: '/myspace/listings' } });
-        } else if (realType === 'Residential' || realType === 'Building') {
-            navigate('/myspace/inventory/config-building', { state: { editId: item.id, returnTo: '/myspace/listings' } });
+        let routeType = '';
+        
+        if (realType === 'Flat') routeType = 'flat';
+        else if (realType === 'Vehicle') routeType = 'vehicle';
+        else if (realType === 'Gadget') routeType = 'gadget';
+        else if (realType === 'Service' || realType === 'Professional') routeType = 'service';
+        else if (realType === 'Skill') routeType = 'skill';
+        else if (realType === 'Residential' || realType === 'Building') routeType = 'building';
+        else if (realType === 'Commercial') routeType = 'commercial-building';
+        else if (realType === 'CommercialUnit') routeType = 'commercial-unit';
+        
+        if (routeType) {
+            navigate(`/myspace/assets/edit/${routeType}/${item.id}`, { state: { returnTo: '/myspace/listings' } });
         } else {
-            // Fallback
-            navigate('/myspace/inventory');
+            navigate('/myspace/assets');
         }
     };
 

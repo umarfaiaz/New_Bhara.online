@@ -31,74 +31,89 @@ const Layout: React.FC<LayoutProps> = ({ children, onLogout }) => {
       return currentPath.startsWith(itemPath);
   };
 
-  const hideNavPaths = [
-    '/marketplace/item',
+  // Logic to hide navigation on immersive pages (Chat, Item Details, Payments)
+  // Strict check for inbox chat sub-routes
+  const isChatRoute = location.pathname.includes('/inbox/chat/') || location.pathname.includes('/inbox/group/');
+  
+  const immersivePaths = [
+      '/marketplace/item/',
+      '/myspace/payments' // Payments Detail View
+  ];
+  
+  const shouldHideAllNav = isChatRoute || immersivePaths.some(path => location.pathname.includes(path));
+  
+  const hideMobileNavPaths = [
     '/marketplace/post',
-    '/inbox/chat',
-    '/inbox/group', 
     '/myspace/inventory/config',
     '/myspace/inventory/select-type',
-    '/myspace/inventory/manage-flats'
+    '/myspace/assets/new',
+    '/myspace/assets/edit',
+    '/myspace/assets/add-unit',
+    '/myspace/assets/select-type',
+    '/myspace/payments' // Ensure hidden on mobile too
   ];
 
-  const shouldHideNavMobile = hideNavPaths.some(path => location.pathname.includes(path));
-  const isHomePage = location.pathname === '/home';
+  // Hide bottom nav if immersive OR in specific flows
+  const shouldHideMobileNav = shouldHideAllNav || hideMobileNavPaths.some(path => location.pathname.includes(path));
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-[#f8f9fa] overflow-hidden selection:bg-[#ff4b9a]/20 font-sans">
+    <div className="flex flex-col h-screen w-full bg-[#f8f9fa] overflow-hidden selection:bg-[#ff4b9a]/20 font-sans">
       
-      {/* Desktop Header - Fixed Glassmorphism (Height 80px) */}
-      <header className="hidden md:flex fixed top-0 left-0 right-0 h-[80px] items-center justify-between px-8 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 z-[100] transition-all duration-300">
-        <div className="flex items-center gap-12 h-full max-w-7xl mx-auto w-full">
-            <div className="cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0" onClick={() => navigate('/home')}>
-                <Logo size="md" />
-            </div>
-            
-            <nav className="flex items-center gap-2 h-full">
-            {navItems.map((item) => {
-                const isActive = getIsActive(item.path, location.pathname);
-                return (
-                <NavLink
-                    key={item.path}
-                    to={item.path}
-                    className={`relative flex items-center gap-2.5 px-5 py-2.5 rounded-full transition-all duration-300 group overflow-hidden ${
-                    isActive 
-                        ? 'text-[#ff4b9a] font-bold bg-[#ff4b9a]/5' 
-                        : 'text-gray-500 font-medium hover:text-gray-900 hover:bg-gray-50'
-                    }`}
-                >
-                    <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
-                    <span className="text-sm tracking-wide">
-                    {item.label}
-                    </span>
-                    {isActive && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#ff4b9a] rounded-t-full mx-6"></div>}
-                </NavLink>
-                );
-            })}
-            </nav>
+      {/* Desktop Header - Hidden on Immersive Pages */}
+      {!shouldHideAllNav && (
+        <header className="hidden md:flex fixed top-0 left-0 right-0 h-[80px] items-center justify-between px-8 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 z-[100] transition-all duration-300">
+            <div className="flex items-center gap-12 h-full max-w-7xl mx-auto w-full">
+                <div className="cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0" onClick={() => navigate('/home')}>
+                    <Logo size="md" />
+                </div>
+                
+                <nav className="flex items-center gap-2 h-full">
+                {navItems.map((item) => {
+                    const isActive = getIsActive(item.path, location.pathname);
+                    return (
+                    <NavLink
+                        key={item.path}
+                        to={item.path}
+                        className={`relative flex items-center gap-2.5 px-5 py-2.5 rounded-full transition-all duration-300 group overflow-hidden ${
+                        isActive 
+                            ? 'text-[#ff4b9a] font-bold bg-[#ff4b9a]/5' 
+                            : 'text-gray-500 font-medium hover:text-gray-900 hover:bg-gray-50'
+                        }`}
+                    >
+                        <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                        <span className="text-sm tracking-wide">
+                        {item.label}
+                        </span>
+                        {isActive && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#ff4b9a] rounded-t-full mx-6"></div>}
+                    </NavLink>
+                    );
+                })}
+                </nav>
 
-            <div className="ml-auto">
-                <button 
-                    onClick={onLogout}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-full text-red-600 hover:bg-red-50 transition-all font-bold text-sm border border-transparent hover:border-red-100 group"
-                >
-                    <LogOut size={18} className="transition-transform group-hover:-translate-x-1"/>
-                    <span>{t('profile_logout')}</span>
-                </button>
+                <div className="ml-auto">
+                    <button 
+                        onClick={onLogout}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-full text-red-600 hover:bg-red-50 transition-all font-bold text-sm border border-transparent hover:border-red-100 group"
+                    >
+                        <LogOut size={18} className="transition-transform group-hover:-translate-x-1"/>
+                        <span>{t('profile_logout')}</span>
+                    </button>
+                </div>
             </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden relative pt-0 md:pt-[80px]">
-        <main className={`flex-1 overflow-y-auto custom-scrollbar w-full ${shouldHideNavMobile ? 'pb-safe-bottom' : 'pb-32 md:pb-10'}`}>
-          <div className="w-full min-h-full">
+      {/* Immersive pages need full control over scrolling, regular pages use main scrolling */}
+      <div className={`flex-1 flex flex-col h-full relative ${shouldHideAllNav ? 'pt-0 overflow-hidden' : 'pt-0 md:pt-[80px] overflow-hidden'}`}>
+        <main className={`w-full h-full ${shouldHideAllNav ? 'overflow-hidden flex flex-col' : 'overflow-y-auto custom-scrollbar pb-32 md:pb-10'}`}>
+          <div className={`w-full ${shouldHideAllNav ? 'h-full' : 'min-h-full'}`}>
             {children}
           </div>
         </main>
 
         {/* Mobile Bottom Nav - Floating Modern Pill */}
-        {!shouldHideNavMobile && (
+        {!shouldHideMobileNav && (
           <div className="md:hidden fixed bottom-5 left-4 right-4 z-50 pointer-events-none animate-in slide-in-from-bottom-4 duration-700 ease-out">
             <nav className="w-full max-w-[400px] mx-auto bg-[#1a1a1a]/90 backdrop-blur-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] border border-white/10 rounded-[2rem] flex justify-between items-center h-[70px] px-6 pointer-events-auto">
               {navItems.map((item) => {

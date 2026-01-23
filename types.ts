@@ -23,252 +23,273 @@ export interface User {
   wishlist?: string[];
 }
 
-export type AssetType = 'Residential' | 'Commercial' | 'Shared' | 'Vehicle' | 'Gadget' | 'Event Space' | 'Professional' | 'Service';
-export type RentCycle = 'Hourly' | 'Daily' | 'Weekly' | 'Monthly' | 'Yearly';
+export type AssetCategory = 'Residential' | 'Commercial' | 'Vehicle' | 'Gadget' | 'Service' | 'Skill' | 'Event';
+export type AssetStatus = 'Active' | 'Rented' | 'Listed' | 'Draft' | 'Maintenance';
+export type RentCycle = 'Hourly' | 'Daily' | 'Weekly' | 'Monthly' | 'Yearly' | 'Per Session' | 'Per Project';
+
+// --- Shared Configuration Types ---
+
+export interface LocationData {
+  district: string;
+  upazila: string;
+  area: string;
+  address?: string;
+  mapLink?: string;
+}
+
+export interface RentConfig {
+  allowedTypes: RentCycle[];
+  rates: Partial<Record<RentCycle, number>>; // e.g. { Daily: 5000, Monthly: 120000 }
+  securityDeposit?: number;
+  minimumDuration?: string; // e.g. "3 Days"
+  advancePayment?: number;
+}
+
+export interface ChargesTemplate {
+  serviceCharge?: number;
+  cleaningFee?: number;
+  driverFee?: number; // Vehicles
+  fuelFee?: number;   // Vehicles
+  lateFee?: number;
+  utilityFee?: number; // Property
+  gasFee?: number;
+  waterFee?: number;
+  electricityFee?: number;
+  customCharges?: { name: string; amount: number }[];
+}
+
+// --- Marketplace Specifics ---
+export interface MarketplaceSettings {
+    discounts: { weekly: number; monthly: number }; // Percentage
+    policy: 'Flexible' | 'Moderate' | 'Strict';
+    rules: string[]; // e.g., 'No Smoking', 'No Pets'
+    min_stay: number; // Value
+    min_stay_unit?: 'Day' | 'Week' | 'Month'; // Unit
+}
+
+// --- Base Asset Interface ---
 
 export interface BaseAsset {
-  is_listed?: boolean; // If true, shows in marketplace
-  images?: string[];   // URLs for marketplace
-  
-  // Listing Specifics (The Marketing Layer)
-  listing_title?: string;
-  listing_description?: string;
-  listing_price?: number; // Might differ from internal rent
-  hide_exact_address?: boolean; // Privacy control
-  contact_preferences?: ('phone' | 'email' | 'chat')[]; 
-  booking_type?: 'instant' | 'request'; 
-  
-  // Internal Dynamic Charges (Optional extras like 'Guard Bill')
-  additional_charges?: { 
-    id: string;
-    name: string; 
-    amount: number; 
-    type: 'One-time' | 'Recurring';
-  }[]; 
-}
-
-export interface Building extends BaseAsset {
   id: string;
-  user_id: string;
-  name: string;
-  type: AssetType;
+  ownerId: string;
+  name: string; // Internal Name / Title
+  category: AssetCategory;
+  subCategory?: string; // e.g. "Car", "Flat", "DSLR"
   
-  // Location Details
-  city: string;
-  area: string;
-  address: string; // Full address
-  holding_no?: string;
-  road_no?: string;
-  zip_code?: string;
-  
-  // Structure & Management
-  total_floors: number;
-  caretaker_name?: string;
-  caretaker_phone?: string;
-  
-  // Facilities (Internal reference)
-  amenities?: string[]; // e.g. ['Lift', 'Generator', 'CCTV', 'WiFi', 'Guard']
-  
-  created_at: string;
-  flat_count?: number;
-  occupied_count?: number;
-}
-
-export interface Vehicle extends BaseAsset {
-  id: string;
-  user_id: string;
-  name: string;
-  license_plate: string; // Internal tracking
-  type: string;
-  transmission?: 'Auto' | 'Manual';
-  fuel_type?: 'Petrol' | 'Diesel' | 'CNG' | 'Hybrid' | 'Electric';
-  seats?: number;
-  model_year?: string;
-  color?: string;
-  is_driver_included?: boolean;
-  rates: Partial<Record<RentCycle, number>>;
-  status: 'active' | 'rented' | 'maintenance';
-  created_at: string;
-}
-
-export interface Gadget extends BaseAsset {
-  id: string;
-  user_id: string;
-  name: string;
-  brand?: string;
-  model?: string;
-  serial_no?: string; // Internal tracking
-  category: string;
-  rates: Partial<Record<RentCycle, number>>;
-  default_rent_cycle?: RentCycle;
-  security_deposit: number;
-  status: 'active' | 'rented' | 'maintenance';
-  created_at: string;
-}
-
-export interface ServiceAsset extends BaseAsset {
-  id: string;
-  user_id: string;
-  name: string; 
-  type: 'Professional' | 'Service' | 'Event Space';
-  category: string; 
   description?: string;
-  location?: string;
-  rates: Partial<Record<RentCycle, number>>;
-  status: 'active' | 'rented' | 'unavailable';
-  availability?: string[]; 
+  status: AssetStatus;
+  availability: 'Available' | 'Booked' | 'Maintenance';
+  
+  location: LocationData;
+  rentConfig: RentConfig;
+  charges: ChargesTemplate;
+  
+  images: string[];
+  tags: string[];
+  
   created_at: string;
+  updated_at?: string;
+  
+  // Marketplace Specifics (Optional until listed)
+  is_listed: boolean;
+  listing_title?: string;
+  booking_type?: 'Request' | 'Instant';
+  marketplace_settings?: MarketplaceSettings;
 }
 
-export interface Flat extends BaseAsset {
-  id: string;
-  building_id: string;
-  floor_no: number;
-  flat_no: string; // Internal ID (e.g. 4A)
-  size_sqft: number;
+// --- Category Specific Interfaces ---
+
+// 1. Residential & Commercial Buildings (Parents)
+export interface PropertyBuilding extends BaseAsset {
+  category: 'Residential' | 'Commercial';
+  type: 'Building'; // Discriminator
   
-  // Attributes
-  facing?: 'North' | 'South' | 'East' | 'West' | 'North-East' | 'North-West' | 'South-East' | 'South-West';
-  furnishing?: 'Unfurnished' | 'Semi-Furnished' | 'Fully-Furnished';
+  totalFloors: number;
+  totalUnits: number;
   
-  // Residential Specific
-  bedrooms?: number;
-  washrooms?: number;
-  balconies?: number;
-  has_kitchen?: boolean;
-  has_dining?: boolean;
-  has_living?: boolean;
-  has_gas?: boolean;
-  // Details
-  has_drawing?: boolean;
-  has_servant_room?: boolean;
-
-  // Commercial Specific
-  has_power_backup?: boolean;
-  has_lift_access?: boolean;
-  has_parking?: boolean;
-  is_furnished?: boolean;
-
-  amenities?: string[];
-
-  // Internal Financials (Presets for Billing)
-  rent_type: RentCycle;
-  monthly_rent: number; 
-  service_charge: number;
-  water_bill: number;
-  gas_bill: number;
-  electricity_bill?: number; // Usually metered, but can have base
-  
-  is_vacant: boolean;
-  created_at: string;
-  tenant_id?: string;
-}
-
-export interface Tenant {
-  id: string;
-  asset_id: string;
-  asset_type: AssetType;
-  
-  // Personal Info
-  full_name: string;
-  father_name?: string;
-  dob?: string;
-  gender?: 'Male' | 'Female' | 'Other';
-  marital_status?: 'Single' | 'Married';
-  
-  // Contact
-  phone: string;
-  email?: string;
-  permanent_address?: string;
-  
-  // Identity
-  nid_number?: string;
-  nid_front_image?: string;
-  nid_back_image?: string;
-  profile_image?: string;
-
-  // Occupation
-  profession?: string;
-  company_name?: string;
-  designation?: string;
-
-  // Household
-  members_adults?: number;
-  members_children?: number;
-
-  // Emergency
-  emergency_name?: string;
-  emergency_phone?: string;
-  emergency_relation?: string;
-
-  // Rental Terms
-  start_date: string;
-  end_date?: string;
-  security_deposit?: number;
-  status: 'active' | 'future' | 'past';
-  created_at: string;
-  
-  // Snapshot
-  asset_info?: {
-    name: string;
-    sub_text: string;
+  facilities: {
+    lift?: boolean;
+    liftCount?: number;
+    generator?: boolean;
+    cctv?: boolean;
+    securityGuard?: boolean;
+    parking?: { car: number; bike: number };
+    waterSource?: 'WASA' | 'Deep Tube' | 'Both';
+    gasSource?: 'Pipeline' | 'Cylinder' | 'None';
+    internet?: boolean;
+    fireSafety?: boolean;
   };
 }
 
+// 2. Units (Child Assets)
+export interface PropertyUnit extends BaseAsset {
+  category: 'Residential' | 'Commercial';
+  type: 'Unit';
+  parentId: string; // ID of the Building
+  
+  unitNumber: string; // "4A", "Shop-1"
+  floorNumber: number;
+  sizeSqft: number;
+  
+  // Residential Specifics
+  bedrooms?: number;
+  bathrooms?: number;
+  balconies?: number;
+  furnished?: 'None' | 'Semi' | 'Full';
+  
+  // Commercial Specifics
+  shopCategory?: string; // "Grocery", "Clothing"
+  frontageFeet?: number;
+  officeType?: 'Open' | 'Partitioned';
+}
+
+// 3. Vehicles
+export interface Vehicle extends BaseAsset {
+  category: 'Vehicle';
+  
+  brand: string;
+  model: string;
+  modelYear: string;
+  licensePlate: string;
+  
+  specifications: {
+    transmission: 'Auto' | 'Manual';
+    fuelType: 'Petrol' | 'Diesel' | 'CNG' | 'Hybrid' | 'Electric';
+    seats: number;
+    color?: string;
+    mileage?: string;
+  };
+}
+
+// 4. Gadgets & Tools
+export interface Gadget extends BaseAsset {
+  category: 'Gadget';
+  
+  brand: string;
+  model: string;
+  serialNumber?: string;
+  
+  condition: 'New' | 'Like New' | 'Good' | 'Fair';
+  accessories?: string[]; // "Lens", "Bag", "Charger"
+}
+
+// 5. Services & Skills
+export interface ServiceProfile extends BaseAsset {
+  category: 'Service' | 'Skill';
+  
+  professionalName?: string; // If different from Asset Name
+  experienceYears?: number;
+  qualifications?: string[];
+  coverageArea?: string[]; // List of areas
+  
+  serviceMode: 'Online' | 'Offline' | 'Both';
+}
+
+// 6. Event Venues
+export interface EventVenue extends BaseAsset {
+  category: 'Event';
+  
+  capacity: number;
+  venueType: 'Indoor' | 'Outdoor' | 'Rooftop';
+  
+  features: {
+    ac?: boolean;
+    soundSystem?: boolean;
+    kitchen?: boolean;
+    decorationAllowed?: boolean;
+  };
+}
+
+// Union Type
+export type Asset = PropertyBuilding | PropertyUnit | Vehicle | Gadget | ServiceProfile | EventVenue;
+
+export type AssetType = AssetCategory;
+export type Building = PropertyBuilding;
+export type Flat = PropertyUnit;
+export type ServiceAsset = ServiceProfile;
+
+// --- Legacy Support (Mapped to new structure in UI) ---
+export interface Tenant {
+  id: string;
+  asset_id: string;
+  asset_type: AssetCategory;
+  full_name: string;
+  phone: string;
+  email?: string;
+  status: 'active' | 'future' | 'past';
+  start_date: string;
+  end_date?: string;
+  security_deposit?: number;
+  agreement_text?: string; 
+  
+  // Professional Details
+  profession?: string;
+  organization_name?: string;
+  
+  // Identity
+  nid_number?: string;
+  dob?: string;
+  permanent_address?: string;
+  
+  // Family / Group (Residential)
+  members_adults?: number;
+  members_children?: number;
+  
+  // Vehicle Specific
+  driving_license?: string;
+  
+  // Emergency
+  emergency_contact?: {
+      name: string;
+      phone: string;
+      relation: string;
+  };
+
+  profile_image?: string;
+  created_at: string;
+  asset_info?: { name: string; sub_text: string };
+  
+  // System flags
+  is_registered_user?: boolean;
+  linked_user_id?: string;
+}
+
 export interface BillCharge {
-  name: string;
-  amount: number;
-  note?: string;
-  type?: string;
+    name: string;
+    amount: number;
+    type?: string;
+    note?: string;
 }
 
 export interface Bill {
   id: string;
   tenant_id: string;
-  asset_type: AssetType;
-  month: string; // ISO String Date
+  asset_type: AssetCategory;
+  month: string;
   rent_amount: number;
-  
-  // Residential/Commercial Charges
-  service_charge: number;
-  water_bill: number;
-  gas_bill: number;
-  electricity_bill?: number;
-  
-  // Vehicle Specific
-  fuel_cost?: number;
-  driver_allowance?: number;
-  toll_cost?: number;
-
-  // Gadget Specific
-  damage_cost?: number;
-  late_fee?: number;
-
-  // Generic
-  other_bills?: number;
-  additional_charges_amount: number;
-  
-  // Dynamic Charges
-  extra_charges?: BillCharge[];
-  
   total: number;
-  paid_amount?: number; // Support partial payment tracking
-  status: 'unpaid' | 'paid' | 'partial';
+  paid_amount?: number;
+  // Updated statuses for approval workflow
+  status: 'unpaid' | 'paid' | 'partial' | 'pending_approval' | 'changes_pending';
   created_at: string;
   tenant_name?: string;
   asset_name?: string;
   asset_sub?: string;
   paid_date?: string;
-  paid_method?: string; // Cash, bKash, etc.
+  paid_method?: string;
   paid_note?: string;
-}
-
-export interface Payment {
-  id: string;
-  bill_id: string;
-  paid_amount: number;
-  paid_date: string;
-  method: string;
+  service_charge: number;
+  water_bill: number;
+  gas_bill: number;
+  electricity_bill?: number;
+  fuel_cost?: number;
+  driver_allowance?: number;
+  toll_cost?: number;
+  damage_cost?: number;
+  late_fee?: number;
+  other_bills?: number;
+  additional_charges_amount: number;
+  extra_charges?: BillCharge[];
 }
 
 export interface MaintenanceRequest {
@@ -278,25 +299,28 @@ export interface MaintenanceRequest {
   asset_name: string;
   title: string;
   description: string;
-  category: 'Plumbing' | 'Electrical' | 'Appliance' | 'Furniture' | 'Mechanical' | 'Other';
+  category: 'Plumbing' | 'Electrical' | 'Appliance' | 'Furniture' | 'Structural' | 'Other';
+  subCategory?: string;
   priority: 'Low' | 'Medium' | 'High';
   status: 'Open' | 'In Progress' | 'Resolved';
   created_at: string;
   images?: string[];
+  cost?: number;
 }
 
-// --- Chat Types ---
 export interface ChatSession {
     id: string;
     type: 'direct' | 'group';
+    privacy?: 'public' | 'private'; 
     participants: {
         id: string;
         name: string;
         avatar: string;
         role?: 'admin' | 'member';
     }[];
-    name?: string; // For groups
-    image?: string; // For groups
+    name?: string;
+    image?: string;
+    description?: string; 
     lastMessage?: ChatMessage;
     unreadCount: number;
     updatedAt: string;
@@ -309,11 +333,14 @@ export interface ChatMessage {
     senderId: string;
     text: string;
     timestamp: string;
-    type: 'text' | 'image' | 'system' | 'action'; // action for things like 'Bill Paid'
+    type: 'text' | 'image' | 'system' | 'action'; 
     status: 'sent' | 'delivered' | 'read';
     actionData?: {
-        type: 'payment' | 'maintenance';
+        type: 'payment' | 'maintenance' | 'invoice';
         title: string;
         amount?: number;
+        id?: string;
+        // Expanded to include Bill statuses
+        status?: 'paid' | 'unpaid' | 'pending' | 'partial' | 'pending_approval' | 'changes_pending';
     };
 }

@@ -10,7 +10,46 @@ import Maintenance from './MySpace/Maintenance';
 import MyRental from './MySpace/MyRental';
 import RenterPayments from './MySpace/RenterPayments';
 import { Logo } from '../components/Logo';
-import { LayoutDashboard, Users, Receipt, Box, Home, Wrench, Wallet } from 'lucide-react';
+import { LayoutDashboard, Users, Receipt, Box, Home, Wrench, Wallet, AlertCircle, Building2, Package } from 'lucide-react';
+import { UserService } from '../services/mockData';
+
+// --- Consolidated Management View for Owners ---
+const RentalsManagement: React.FC = () => {
+    const [view, setView] = useState<'inventory' | 'bookings'>('inventory');
+    
+    return (
+        <div className="flex flex-col h-full">
+            {/* Modern Toggle Switcher */}
+            <div className="px-4 sm:px-6 py-4 bg-white border-b border-gray-100 flex justify-center sticky top-0 z-20">
+                <div className="relative flex bg-gray-100/80 p-1.5 rounded-2xl w-full max-w-sm shadow-inner">
+                    {/* Sliding Background */}
+                    <div 
+                        className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 ease-out ${view === 'inventory' ? 'left-1.5' : 'left-[calc(50%+3px)]'}`}
+                    ></div>
+                    
+                    <button 
+                        onClick={() => setView('inventory')}
+                        className={`relative flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-colors z-10 ${view === 'inventory' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                        <Package size={16} className={view === 'inventory' ? 'text-[#ff4b9a]' : 'text-gray-400'}/> 
+                        Inventory
+                    </button>
+                    <button 
+                        onClick={() => setView('bookings')}
+                        className={`relative flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-colors z-10 ${view === 'bookings' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                        <Users size={16} className={view === 'bookings' ? 'text-[#ff4b9a]' : 'text-gray-400'}/> 
+                        Bookings
+                    </button>
+                </div>
+            </div>
+            
+            <div className="flex-1">
+                {view === 'inventory' ? <Inventory /> : <Renters />}
+            </div>
+        </div>
+    );
+};
 
 const MySpace: React.FC = () => {
   const [role, setRole] = useState<'lender' | 'renter'>(() => {
@@ -20,17 +59,19 @@ const MySpace: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Sync role changes
     localStorage.setItem('bhara_role', role);
-    if (!location.pathname.startsWith('/myspace')) {
-        navigate('/myspace/overview');
-    }
+    UserService.switchRole(role); 
+    
+    // Always reset to overview when switching roles to prevent empty states
+    navigate('/myspace/overview');
   }, [role]);
 
   const lenderTabs = [
     { label: 'Overview', path: '/myspace/overview', icon: LayoutDashboard },
-    { label: 'Assets', path: '/myspace/assets', icon: Box },
-    { label: 'Renters', path: '/myspace/renters', icon: Users },
+    { label: 'Rentals', path: '/myspace/rentals', icon: Home }, // Consolidated
     { label: 'Payments', path: '/myspace/payments', icon: Receipt },
+    { label: 'Issues', path: '/myspace/issues', icon: AlertCircle },
   ];
 
   const renterTabs = [
@@ -62,13 +103,13 @@ const MySpace: React.FC = () => {
                     <div className="bg-gray-100/80 p-1 rounded-xl flex gap-1 shadow-inner border border-gray-200/50 md:ml-6">
                         <button 
                             onClick={() => setRole('lender')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${role === 'lender' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700'}`}
+                            className={`px-4 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 ${role === 'lender' ? 'bg-white text-[#2d1b4e] shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
                         >
                             Owner
                         </button>
                         <button 
                             onClick={() => setRole('renter')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${role === 'renter' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700'}`}
+                            className={`px-4 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 ${role === 'renter' ? 'bg-white text-[#2d1b4e] shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600'}`}
                         >
                             Renter
                         </button>
@@ -77,24 +118,24 @@ const MySpace: React.FC = () => {
 
                 {/* Bottom Row: Navigation Tabs */}
                 <div className="w-full md:w-auto overflow-x-auto scrollbar-hide">
-                    <div className="flex items-center md:gap-8 gap-6 min-w-max">
+                    <div className="flex items-center justify-around md:justify-start md:gap-10 gap-2 min-w-max">
                         {currentTabs.map((tab) => {
                             const isActive = location.pathname.startsWith(tab.path);
                             return (
                             <NavLink
                                 key={tab.label}
                                 to={tab.path}
-                                className={`group flex items-center gap-2 pb-3 md:pb-4 border-b-[3px] transition-all px-1 ${
+                                className={`group flex flex-col md:flex-row items-center md:gap-2 gap-1 pb-2 md:pb-4 border-b-[3px] transition-all px-3 md:px-1 ${
                                 isActive 
                                     ? 'border-[#ff4b9a] text-[#ff4b9a]' 
                                     : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'
                                 }`}
                             >
                                 <tab.icon 
-                                    size={18} 
+                                    size={20} 
                                     className={`transition-transform duration-300 ${isActive ? 'scale-110 stroke-[2.5px]' : 'group-hover:scale-110'}`} 
                                 />
-                                <span className={`text-sm font-bold tracking-wide ${isActive ? '' : ''}`}>
+                                <span className={`text-[10px] md:text-sm font-bold tracking-wide`}>
                                     {tab.label}
                                 </span>
                             </NavLink>
@@ -113,13 +154,16 @@ const MySpace: React.FC = () => {
             {role === 'lender' ? (
                 <>
                     <Route path="overview" element={<Overview />} />
-                    <Route path="assets/*" element={<Inventory />} />
-                    {/* Redirect old routes */}
-                    <Route path="inventory/*" element={<Navigate to="/myspace/assets" />} />
-                    <Route path="listings/*" element={<Navigate to="/myspace/assets" />} />
+                    {/* Consolidated Routes */}
+                    <Route path="rentals/*" element={<RentalsManagement />} />
                     
-                    <Route path="renters/*" element={<Renters />} />
+                    {/* Legacy redirects for safety */}
+                    <Route path="assets/*" element={<Navigate to="/myspace/rentals" />} />
+                    <Route path="renters/*" element={<Navigate to="/myspace/rentals" />} />
+                    <Route path="inventory/*" element={<Navigate to="/myspace/rentals" />} />
+                    
                     <Route path="payments" element={<Payments />} />
+                    <Route path="issues" element={<Maintenance />} /> 
                 </>
             ) : (
                 <>

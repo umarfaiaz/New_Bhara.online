@@ -1,191 +1,301 @@
-
 import React, { useState, useEffect } from 'react';
-import { Plus, Wrench, Clock, CheckCircle2, AlertCircle, Camera, X, ChevronDown, Car, Home, Briefcase } from 'lucide-react';
-import { DataService } from '../../services/mockData';
-import { MaintenanceRequest, AssetType } from '../../types';
+import { 
+    Plus, Wrench, Clock, CheckCircle2, AlertCircle, Camera, X, ChevronRight, 
+    Car, Home, Briefcase, Zap, Droplets, Armchair, Hammer, Check, ArrowRight,
+    MessageCircle, AlertTriangle, Calendar, Filter
+} from 'lucide-react';
+import { DataService, UserService, ChatService } from '../../services/mockData';
+import { MaintenanceRequest } from '../../types';
+import { useNavigate } from 'react-router-dom';
+
+// --- CONFIG & CONSTANTS ---
+
+const ISSUE_CATEGORIES = [
+    { id: 'Plumbing', label: 'Plumbing', icon: Droplets, color: 'text-blue-500', bg: 'bg-blue-50', sub: ['Leaky Faucet', 'Clogged Drain', 'Pipe Leak', 'No Water', 'Low Pressure', 'Water Heater'] },
+    { id: 'Electrical', label: 'Electrical', icon: Zap, color: 'text-yellow-500', bg: 'bg-yellow-50', sub: ['Power Outage', 'Faulty Switch', 'Short Circuit', 'Light Fixture', 'Fan Issue'] },
+    { id: 'Appliance', label: 'Appliance', icon: AlertCircle, color: 'text-purple-500', bg: 'bg-purple-50', sub: ['AC Not Cooling', 'Fridge Issue', 'Oven/Stove', 'Washing Machine', 'Geyser'] },
+    { id: 'Structural', label: 'Structural', icon: Home, color: 'text-orange-500', bg: 'bg-orange-50', sub: ['Wall Damp', 'Tile Broken', 'Door/Window', 'Lock Issue', 'Paint Peeling'] },
+    { id: 'Furniture', label: 'Furniture', icon: Armchair, color: 'text-pink-500', bg: 'bg-pink-50', sub: ['Broken Chair', 'Table Issue', 'Wardrobe', 'Bed'] },
+    { id: 'Other', label: 'Other', icon: Hammer, color: 'text-gray-500', bg: 'bg-gray-50', sub: ['Pest Control', 'Noise Complaint', 'Security Issue', 'Internet'] },
+];
 
 const Maintenance: React.FC = () => {
-    // Current user 't1'
-    const [requests, setRequests] = useState<MaintenanceRequest[]>(DataService.getMaintenanceRequests('t1'));
-    const [myRentals, setMyRentals] = useState(DataService.getMyRentals());
-    const [showForm, setShowForm] = useState(false);
+    const navigate = useNavigate();
+    const currentUser = UserService.getCurrentUser();
+    const isOwner = currentUser.role === 'lender';
+
+    const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
+    const [filterStatus, setFilterStatus] = useState<'All' | 'Open' | 'In Progress' | 'Resolved'>('All');
     
-    // Form State
-    const [selectedAssetId, setSelectedAssetId] = useState<string>(myRentals[0]?.id || '');
-    const [category, setCategory] = useState<MaintenanceRequest['category']>('Plumbing');
-    const [title, setTitle] = useState('');
-    const [desc, setDesc] = useState('');
-    const [priority, setPriority] = useState<'Low'|'Medium'|'High'>('Medium');
+    // Renter Wizard State
+    const [isWizardOpen, setIsWizardOpen] = useState(false);
+    const [wizardStep, setWizardStep] = useState(1);
+    const [newIssue, setNewIssue] = useState<Partial<MaintenanceRequest>>({
+        priority: 'Medium',
+        category: 'Plumbing'
+    });
 
-    const getStatusColor = (status: string) => {
-        switch(status) {
-            case 'Open': return 'bg-orange-100 text-orange-700';
-            case 'In Progress': return 'bg-blue-100 text-blue-700';
-            case 'Resolved': return 'bg-green-100 text-green-700';
-            default: return 'bg-gray-100 text-gray-600';
-        }
+    useEffect(() => {
+        refreshData();
+    }, [isOwner]); // Refresh when role switches
+
+    const refreshData = () => {
+        const reqs = DataService.getMaintenanceRequests(currentUser.id);
+        setRequests(reqs.sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
     };
 
-    const getIcon = (cat: string) => {
-        return <Wrench size={18} />;
+    const handleUpdateStatus = (id: string, newStatus: 'In Progress' | 'Resolved') => {
+        DataService.updateMaintenanceStatus(id, newStatus);
+        refreshData();
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const rental = myRentals.find(r => r.id === selectedAssetId);
-        if(title && desc && rental) {
-            DataService.addMaintenanceRequest({
-                tenant_id: 't1',
-                asset_id: rental.asset_id,
-                asset_name: rental.asset_info?.name || 'Asset',
-                title,
-                description: desc,
-                category,
-                priority
-            });
-            setRequests(DataService.getMaintenanceRequests('t1'));
-            setShowForm(false);
-            // Reset form
-            setTitle(''); setDesc(''); setPriority('Medium');
-        }
+    // --- RENTER WIZARD SUBMIT ---
+    const submitIssue = () => {
+        // Mock finding the asset (usually 1 active rental for renter)
+        const myRentals = DataService.getMyRentals();
+        
+        // Ensure there is a rental to associate with
+        const assetId = myRentals.length > 0 ? myRentals[0].asset_id : 'unknown';
+        const assetName = myRentals.length > 0 ? myRentals[0].asset_info?.name : 'General Inquiry';
+
+        DataService.addMaintenanceRequest({
+            tenant_id: currentUser.id, // Use actual current user ID
+            asset_id: assetId,
+            asset_name: assetName,
+            title: newIssue.subCategory || newIssue.title || 'Maintenance Issue',
+            description: newIssue.description || 'No description provided.',
+            category: newIssue.category as any,
+            subCategory: newIssue.subCategory,
+            priority: newIssue.priority
+        });
+        
+        setIsWizardOpen(false);
+        setWizardStep(1);
+        setNewIssue({ priority: 'Medium', category: 'Plumbing' });
+        refreshData();
     };
 
-    return (
-        <div className="p-5 pb-32 min-h-screen bg-gray-50 relative">
-            {/* Header / Filter */}
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h2 className="text-xl font-bold text-gray-900">Issues & Repairs</h2>
-                    <p className="text-xs text-gray-500">Track maintenance status</p>
-                </div>
-                <button 
-                    onClick={() => setShowForm(true)}
-                    className="bg-[#2d1b4e] text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg active:scale-95 transition-transform"
-                >
-                    <Plus size={16}/> Report Issue
-                </button>
-            </div>
+    // --- FILTER LOGIC ---
+    const filteredRequests = requests.filter(req => {
+        if (filterStatus === 'All') return true;
+        return req.status === filterStatus;
+    });
 
-            {/* List */}
-            <div className="space-y-4">
-                {requests.map(req => (
-                    <div key={req.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                        <div className="flex justify-between items-start mb-2">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500">
-                                    {getIcon(req.category)}
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-gray-900 text-sm">{req.title}</h4>
-                                    <span className="text-[10px] text-gray-400 font-bold uppercase">{req.asset_name} • {new Date(req.created_at).toLocaleDateString()}</span>
-                                </div>
-                            </div>
-                            <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide ${getStatusColor(req.status)}`}>
-                                {req.status}
-                            </span>
-                        </div>
-                        <p className="text-xs text-gray-600 pl-[3.25rem] mb-3">{req.description}</p>
-                        <div className="pl-[3.25rem] flex gap-2">
-                             <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200">{req.category}</span>
-                             <span className={`text-[10px] px-2 py-0.5 rounded border ${req.priority === 'High' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                                 {req.priority} Priority
-                             </span>
-                        </div>
+    // --- OWNER VIEW ---
+    if (isOwner) {
+        return (
+            <div className="max-w-5xl mx-auto p-6 pb-32">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h2 className="text-2xl font-black text-gray-900 tracking-tight">Maintenance Board</h2>
+                        <p className="text-sm text-gray-500 font-medium mt-1">Manage & resolve tenant issues.</p>
                     </div>
-                ))}
-                {requests.length === 0 && (
-                    <div className="text-center py-10 text-gray-400">
-                        <CheckCircle2 size={40} className="mx-auto mb-2 opacity-20"/>
-                        <p className="text-sm">No maintenance requests.</p>
-                    </div>
-                )}
-            </div>
-
-            {/* Add Request Modal */}
-            {showForm && (
-                <div className="fixed inset-0 bg-black/60 z-50 flex flex-col justify-end sm:justify-center items-center backdrop-blur-sm">
-                    <div className="bg-white w-full sm:max-w-md rounded-t-[2rem] sm:rounded-[2rem] p-6 animate-in slide-in-from-bottom duration-300 shadow-2xl h-[85vh] sm:h-auto overflow-y-auto">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-bold text-gray-900">Report an Issue</h3>
-                            <button onClick={() => setShowForm(false)} className="p-2 bg-gray-50 rounded-full hover:bg-gray-100"><X size={20}/></button>
-                        </div>
-                        
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            {/* Asset Selection */}
-                            <div>
-                                <label className="block text-xs font-bold text-gray-700 mb-2">Select Asset <span className="text-red-500">*</span></label>
-                                <div className="space-y-2">
-                                    {myRentals.map(rental => (
-                                        <div 
-                                            key={rental.id} 
-                                            onClick={() => setSelectedAssetId(rental.id)}
-                                            className={`p-3 rounded-xl border flex items-center gap-3 cursor-pointer transition-all ${selectedAssetId === rental.id ? 'border-[#ff4b9a] bg-pink-50' : 'border-gray-200'}`}
-                                        >
-                                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-500 shadow-sm">
-                                                {rental.asset_type === 'Vehicle' ? <Car size={14}/> : rental.asset_type === 'Residential' ? <Home size={14}/> : <Briefcase size={14}/>}
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="text-sm font-bold text-gray-900">{rental.asset_info?.name}</p>
-                                                <p className="text-[10px] text-gray-500">{rental.asset_info?.sub_text}</p>
-                                            </div>
-                                            {selectedAssetId === rental.id && <div className="w-3 h-3 bg-[#ff4b9a] rounded-full"></div>}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-gray-700 mb-2">Category</label>
-                                <div className="grid grid-cols-3 gap-2">
-                                    {['Plumbing', 'Electrical', 'Appliance', 'Furniture', 'Mechanical', 'Other'].map(cat => (
-                                        <button 
-                                            key={cat} 
-                                            type="button"
-                                            onClick={() => setCategory(cat as any)}
-                                            className={`py-2 px-1 rounded-xl text-[10px] font-bold border transition-all ${category === cat ? 'bg-[#ff4b9a] text-white border-[#ff4b9a]' : 'bg-white text-gray-600 border-gray-200'}`}
-                                        >
-                                            {cat}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-gray-700 mb-2">Title</label>
-                                <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-sm focus:outline-none focus:border-[#ff4b9a]" placeholder="e.g. Engine Noise or Leaky Tap"/>
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-gray-700 mb-2">Description</label>
-                                <textarea value={desc} onChange={e => setDesc(e.target.value)} rows={3} className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-sm focus:outline-none focus:border-[#ff4b9a]" placeholder="Describe the issue..."/>
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-gray-700 mb-2">Priority</label>
-                                <div className="flex bg-gray-100 p-1 rounded-xl">
-                                    {['Low', 'Medium', 'High'].map(p => (
-                                        <button 
-                                            key={p}
-                                            type="button"
-                                            onClick={() => setPriority(p as any)}
-                                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${priority === p ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
-                                        >
-                                            {p}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            
-                            <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center text-gray-400 bg-gray-50 cursor-pointer hover:bg-gray-100">
-                                <Camera size={24} className="mb-1"/>
-                                <span className="text-[10px] font-bold uppercase">Add Photo</span>
-                            </div>
-
-                            <button type="submit" className="w-full py-4 bg-[#2d1b4e] text-white font-bold rounded-xl shadow-lg mt-4 active:scale-95 transition-transform">
-                                Submit Request
+                    <div className="flex bg-white p-1 rounded-xl shadow-sm border border-gray-100">
+                        {['All', 'Open', 'In Progress', 'Resolved'].map(s => (
+                            <button 
+                                key={s} 
+                                onClick={() => setFilterStatus(s as any)}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${filterStatus === s ? 'bg-gray-900 text-white shadow' : 'text-gray-500 hover:bg-gray-50'}`}
+                            >
+                                {s}
                             </button>
-                        </form>
+                        ))}
                     </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredRequests.map(req => {
+                        const CatConfig = ISSUE_CATEGORIES.find(c => c.id === req.category) || ISSUE_CATEGORIES[0];
+                        const Icon = CatConfig.icon;
+                        return (
+                            <div key={req.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex flex-col relative overflow-hidden">
+                                <div className={`h-1.5 w-full ${req.priority === 'High' ? 'bg-red-500' : req.priority === 'Medium' ? 'bg-orange-400' : 'bg-green-400'}`}></div>
+                                <div className="p-5 flex-1 flex flex-col">
+                                    <div className="flex justify-between items-start mb-3">
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${CatConfig.bg} ${CatConfig.color}`}>
+                                            <Icon size={20}/>
+                                        </div>
+                                        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase border ${req.status === 'Open' ? 'bg-orange-50 text-orange-600 border-orange-100' : req.status === 'In Progress' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-green-50 text-green-600 border-green-100'}`}>
+                                            {req.status}
+                                        </span>
+                                    </div>
+                                    
+                                    <h4 className="font-bold text-gray-900 text-sm mb-1 line-clamp-1">{req.title}</h4>
+                                    <p className="text-xs text-gray-500 mb-3">{req.subCategory && <span className="font-semibold text-gray-700">{req.subCategory} • </span>} {req.asset_name}</p>
+                                    
+                                    <div className="mt-auto pt-3 border-t border-gray-50 flex gap-2">
+                                        {req.status === 'Open' && (
+                                            <button onClick={() => handleUpdateStatus(req.id, 'In Progress')} className="flex-1 py-2 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg hover:bg-blue-100 transition-colors">
+                                                Accept
+                                            </button>
+                                        )}
+                                        {req.status !== 'Resolved' && (
+                                            <button onClick={() => handleUpdateStatus(req.id, 'Resolved')} className="flex-1 py-2 bg-green-50 text-green-600 text-xs font-bold rounded-lg hover:bg-green-100 transition-colors flex items-center justify-center gap-1">
+                                                <Check size={12}/> Resolve
+                                            </button>
+                                        )}
+                                        <button onClick={() => { ChatService.startChat(req.tenant_id, `Regarding: ${req.title}`); navigate('/inbox'); }} className="p-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100">
+                                            <MessageCircle size={16}/>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                    {filteredRequests.length === 0 && (
+                        <div className="col-span-full py-20 text-center text-gray-400 bg-white rounded-3xl border border-dashed border-gray-200">
+                            <CheckCircle2 size={48} className="mx-auto mb-4 opacity-20"/>
+                            <p className="font-medium">No tasks in this view.</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    // --- RENTER VIEW ---
+    return (
+        <div className="p-6 pb-32 min-h-screen bg-gray-50 max-w-2xl mx-auto">
+            {!isWizardOpen ? (
+                <>
+                    <div className="flex justify-between items-end mb-6">
+                        <div>
+                            <h2 className="text-2xl font-black text-gray-900 tracking-tight">Report Issue</h2>
+                            <p className="text-xs text-gray-500 font-medium mt-1">Get things fixed quickly.</p>
+                        </div>
+                        <button 
+                            onClick={() => setIsWizardOpen(true)}
+                            className="bg-[#2d1b4e] text-white px-5 py-3 rounded-2xl text-xs font-bold flex items-center gap-2 shadow-lg hover:bg-[#3a2366] active:scale-95 transition-all"
+                        >
+                            <Plus size={16}/> New Request
+                        </button>
+                    </div>
+
+                    <div className="space-y-4">
+                        {requests.map(req => {
+                            const CatConfig = ISSUE_CATEGORIES.find(c => c.id === req.category) || ISSUE_CATEGORIES[0];
+                            const Icon = CatConfig.icon;
+                            return (
+                                <div key={req.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex gap-4 group">
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${CatConfig.bg} ${CatConfig.color}`}>
+                                        <Icon size={24}/>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-start mb-1">
+                                            <h4 className="font-bold text-gray-900 text-sm truncate">{req.title}</h4>
+                                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${req.status === 'Resolved' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                                                {req.status}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-gray-500 line-clamp-1">{req.description}</p>
+                                        <div className="mt-2 flex items-center gap-2 text-[10px] font-bold text-gray-400">
+                                            <span>{new Date(req.created_at).toLocaleDateString()}</span>
+                                            <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                                            <span className={`${req.priority === 'High' ? 'text-red-500' : 'text-gray-400'}`}>{req.priority} Priority</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        {requests.length === 0 && (
+                            <div className="text-center py-12">
+                                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-gray-50">
+                                    <CheckCircle2 size={32} className="text-green-500"/>
+                                </div>
+                                <h3 className="text-gray-900 font-bold text-sm">Everything Looks Good!</h3>
+                                <p className="text-gray-400 text-xs mt-1">No active maintenance issues reported.</p>
+                            </div>
+                        )}
+                    </div>
+                </>
+            ) : (
+                // --- WIZARD UI ---
+                <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-gray-100 min-h-[500px] flex flex-col animate-in slide-in-from-bottom duration-300">
+                    <div className="flex justify-between items-center mb-6">
+                        <button onClick={() => { if(wizardStep > 1) setWizardStep(1); else setIsWizardOpen(false); }} className="p-2 hover:bg-gray-100 rounded-full">
+                            <ArrowRight size={20} className="rotate-180"/>
+                        </button>
+                        <h3 className="font-bold text-lg">
+                            {wizardStep === 1 ? 'Select Category' : 'Issue Details'}
+                        </h3>
+                        <button onClick={() => setIsWizardOpen(false)} className="p-2 hover:bg-gray-100 rounded-full"><X size={20}/></button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto custom-scrollbar pb-4">
+                        {wizardStep === 1 && (
+                            <div className="grid grid-cols-2 gap-3">
+                                {ISSUE_CATEGORIES.map(cat => (
+                                    <button 
+                                        key={cat.id}
+                                        onClick={() => { setNewIssue({...newIssue, category: cat.id as any}); setWizardStep(2); }}
+                                        className="p-4 rounded-2xl border border-gray-100 hover:border-[#ff4b9a] hover:bg-pink-50 transition-all flex flex-col items-center gap-3 group text-center"
+                                    >
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform ${cat.bg} ${cat.color}`}>
+                                            <cat.icon size={24}/>
+                                        </div>
+                                        <span className="text-xs font-bold text-gray-700 group-hover:text-[#ff4b9a]">{cat.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        {wizardStep === 2 && (
+                            <div className="space-y-6">
+                                {/* Common Issues Pills */}
+                                <div>
+                                    <label className="text-xs font-bold text-gray-400 uppercase mb-3 block">Common Issues</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {ISSUE_CATEGORIES.find(c => c.id === newIssue.category)?.sub.map(sub => (
+                                            <button 
+                                                key={sub}
+                                                onClick={() => setNewIssue({...newIssue, subCategory: sub, title: sub})}
+                                                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${newIssue.subCategory === sub ? 'bg-[#2d1b4e] text-white border-[#2d1b4e]' : 'bg-gray-50 text-gray-600 border-gray-200'}`}
+                                            >
+                                                {sub}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="text-xs font-bold text-gray-400 uppercase mb-2 block">Description</label>
+                                    <textarea 
+                                        rows={3}
+                                        value={newIssue.description}
+                                        onChange={e => setNewIssue({...newIssue, description: e.target.value})}
+                                        className="w-full p-4 bg-gray-50 rounded-xl text-sm font-bold border-transparent focus:bg-white focus:border-[#ff4b9a] outline-none transition-all"
+                                        placeholder="Describe the problem..."
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-xs font-bold text-gray-400 uppercase mb-2 block">Urgency</label>
+                                    <div className="flex bg-gray-100 p-1 rounded-xl">
+                                        {['Low', 'Medium', 'High'].map(p => (
+                                            <button 
+                                                key={p}
+                                                onClick={() => setNewIssue({...newIssue, priority: p as any})}
+                                                className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition-all ${newIssue.priority === p ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
+                                            >
+                                                {p}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="p-4 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center text-gray-400 gap-2 cursor-pointer hover:border-[#ff4b9a] hover:text-[#ff4b9a] transition-all">
+                                    <Camera size={24}/>
+                                    <span className="text-xs font-bold">Add Photos</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {wizardStep === 2 && (
+                        <button onClick={submitIssue} className="w-full py-4 bg-[#2d1b4e] text-white font-bold rounded-xl shadow-lg hover:bg-[#3a2366] active:scale-95 transition-all mt-4">
+                            Submit Request
+                        </button>
+                    )}
                 </div>
             )}
         </div>

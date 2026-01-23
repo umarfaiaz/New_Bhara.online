@@ -7,107 +7,86 @@ export const COLORS = {
   muted: '#6b7280',
 };
 
-export const CITIES = [
-  'Dhaka', 
-  'Chattogram', 
-  'Sylhet', 
-  'Rajshahi', 
-  'Khulna', 
-  'Barishal', 
-  'Rangpur', 
-  'Mymensingh',
-  'Gazipur', 
-  'Narayanganj', 
-  'Cumilla', 
-  'Cox\'s Bazar', 
-  'Bogura', 
-  'Savar'
-];
-
-export const AREAS: Record<string, string[]> = {
-  'Dhaka': [
-    'Adabor', 'Badda', 'Banani', 'Bangshal', 'Bhashantek', 'Cantonment', 'Chawkbazar',
-    'Dakhinkhan', 'Darus Salam', 'Demra', 'Dhanmondi', 'Gendaria', 'Gulshan',
-    'Hazaribagh', 'Jatrabari', 'Kadamtali', 'Kafrul', 'Kalabagan', 'Kamrangirchar',
-    'Khilgaon', 'Khilkhet', 'Kotwali', 'Lalbagh', 'Mirpur', 'Mohammadpur', 'Motijheel',
-    'New Market', 'Pallabi', 'Paltan', 'Ramna', 'Rampura', 'Sabujbagh', 'Shah Ali',
-    'Shahbag', 'Sher-e-Bangla Nagar', 'Shyampur', 'Sutrapur', 'Tejgaon', 'Turag',
-    'Uttara', 'Uttar Khan', 'Vatara', 'Wari'
-  ],
-  'Chattogram': [
-    'Agrabad', 'Akbar Shah', 'Bakalia', 'Bayazid', 'Chandgaon', 'Chawkbazar',
-    'Double Mooring', 'EPZ', 'Halishahar', 'Karnafuli', 'Khulshi', 'Kotwali',
-    'Pahartali', 'Panchlaish', 'Patenga', 'Sadarghat'
-  ],
-  'Sylhet': [
-    'Amberkhana', 'Bandar Bazar', 'Beanibazar', 'Bishwanath', 'Fenchuganj',
-    'Golapganj', 'Jaintiapur', 'Kanaighat', 'Kotwali', 'Shahjalal Uposhahar',
-    'South Surma', 'Zindabazar'
-  ],
-  'Rajshahi': [
-    'Boalia', 'Chandrima', 'Katakhali', 'Matihar', 'Paba', 'Rajpara', 'Shah Makhdum'
-  ],
-  'Khulna': [
-    'Daulatpur', 'Khalishpur', 'Khan Jahan Ali', 'Kotwali', 'Saltachara', 'Sonadanga'
-  ],
-  'Barishal': [
-    'Agailjhara', 'Babuganj', 'Bakerganj', 'Banaripara', 'Gaurnadi', 'Hizla',
-    'Barishal Sadar', 'Mehendiganj', 'Muladi', 'Wazirpur'
-  ],
-  'Rangpur': [
-    'Badarganj', 'Gangachara', 'Kaunia', 'Rangpur Sadar', 'Mithapukur',
-    'Pirgachha', 'Pirganj', 'Taraganj'
-  ],
-  'Mymensingh': [
-    'Bhaluka', 'Dhobaura', 'Fulbaria', 'Gaffargaon', 'Gauripur', 'Haluaghat',
-    'Ishwarganj', 'Mymensingh Sadar', 'Muktagachha', 'Nandail', 'Phulpur', 'Trishal'
-  ],
-  'Gazipur': [
-    'Gazipur Sadar', 'Kaliakair', 'Kaliganj', 'Kapasia', 'Sreepur', 'Tongi'
-  ],
-  'Narayanganj': [
-    'Araihazar', 'Bandar', 'Narayanganj Sadar', 'Rupganj', 'Siddhirganj', 'Sonargaon'
-  ],
-  'Cumilla': [
-    'Barura', 'Brahmanpara', 'Burichang', 'Chandina', 'Chauddagram', 'Cumilla Sadar',
-    'Daudkandi', 'Debidwar', 'Homna', 'Laksam', 'Lalmai', 'Meghna', 'Monohargonj',
-    'Muradnagar', 'Nangalkot', 'Titas'
-  ],
-  'Cox\'s Bazar': [
-    'Chakaria', 'Cox\'s Bazar Sadar', 'Kutubdia', 'Maheshkhali', 'Pekua',
-    'Ramu', 'Teknaf', 'Ukhiya'
-  ],
-  'Bogura': [
-    'Adamdighi', 'Bogura Sadar', 'Dhunat', 'Dupchanchia', 'Gabtali', 'Kahaloo',
-    'Nandigram', 'Sariakandi', 'Sherpur', 'Shibganj', 'Sonatala'
-  ],
-  'Savar': [
-    'Aminbazar', 'Ashulia', 'Birulia', 'Dhamsona', 'Hemayetpur', 'Shimulia', 'Tetuljhora'
-  ]
+// Hierarchical Location Data (Mock Subset)
+export const BANGLADESH_LOCATIONS: Record<string, Record<string, string[]>> = {
+  'Dhaka': {
+    'Uttara': ['Sector 1', 'Sector 3', 'Sector 4', 'Sector 7', 'Sector 10', 'Sector 11', 'Sector 13', 'Sector 14'],
+    'Mirpur': ['Mirpur 1', 'Mirpur 2', 'Mirpur 10', 'Mirpur 11', 'Mirpur 12', 'Pallabi', 'Kalshi', 'DOHS'],
+    'Gulshan': ['Gulshan 1', 'Gulshan 2', 'Niketan'],
+    'Banani': ['Block A', 'Block B', 'Block C', 'Block E', 'Chairman Bari'],
+    'Dhanmondi': ['Road 2', 'Road 5', 'Road 15', 'Road 27', 'Jigatola', 'Shangkar'],
+    'Mohammadpur': ['Ring Road', 'Shekhertek', 'Adabor', 'Japan Garden', 'Bosila'],
+    'Bashundhara': ['Block A', 'Block B', 'Block C', 'Block D', 'Block I'],
+    'Badda': ['North Badda', 'South Badda', 'Merul Badda', 'Aftabnagar']
+  },
+  'Chattogram': {
+    'Agrabad': ['CDA R/A', 'Access Road', 'Muhuri Para'],
+    'Khulshi': ['South Khulshi', 'North Khulshi', 'Zakir Hossain Road'],
+    'Halishahar': ['Block A', 'Block B', 'GEC Circle'],
+    'Panchlaish': ['Probortak', 'Muradpur']
+  },
+  'Sylhet': {
+    'Kotwali': ['Zindabazar', 'Bandar Bazar', 'Ambarkhana'],
+    'Shah Paran': ['Uposhahar', 'Shibganj', 'Tilagor']
+  },
+  'Rajshahi': {
+    'Boalia': ['Shaheb Bazar', 'Alupotti'],
+    'Motihar': ['Kazla', 'Binodpur']
+  }
 };
+
+export const CITIES = Object.keys(BANGLADESH_LOCATIONS);
 
 export const RENT_TYPES = [
   'Hourly',
   'Daily',
   'Weekly',
   'Monthly',
-  'Yearly'
+  'Yearly',
+  'Per Session',
+  'Per Project'
+];
+
+export const ASSET_CATEGORIES = [
+  'Residential',
+  'Commercial',
+  'Vehicle',
+  'Gadget',
+  'Service',
+  'Skill',
+  'Event'
 ];
 
 export const MARKETPLACE_CATEGORIES: Record<string, string[]> = {
-  'Real Estate': [
-    'Flat', 'Furnished Flat', 'Bachelor', 'Sublet', 'Hostel', 'Office Space', 'Shop', 'Empty Space', 'Land', 'Garage'
+  'Residential': [
+    'Flat', 'Furnished Flat', 'Bachelor', 'Sublet', 'Hostel', 'Empty Space', 'Garage'
   ],
-  'Vehicles': [
-    'Car', 'Bike', 'Bicycle', 'Truck', 'Van', 'Microbus', 'Ambulance', 'Ghora Gari', 'Boat'
+  'Commercial': [
+    'Shop', 'Office', 'Warehouse', 'Factory', 'Showroom'
   ],
-  'Tech': [
+  'Vehicle': [
+    'Car', 'Bike', 'Bicycle', 'Truck', 'Van', 'Microbus', 'Ambulance', 'Boat'
+  ],
+  'Gadget': [
     'Camera', 'Lens', 'Laptop', 'Drone', 'Gaming Console', 'Projector', 'Sound System', 'Tripod', 'Lighting Kit'
   ],
-  'Services': [
-    'Shifting', 'Technician', 'Teacher', 'AC Servicing', 'Photographer', 'Driver', 'Cleaner', 'Cook', 'Plumber', 'Electrician'
+  'Skill': [
+    'Tutor', 'Developer', 'Designer', 'Consultant', 'Trainer', 'Handyman', 'Technician', 'Photographer', 'Cinematographer'
   ],
-  'Events': [
-    'Community Center', 'Rooftop', 'Empty Space', 'Decorator', 'Catering', 'Sound', 'Lighting', 'Ghora Gari', 'Photographer', 'Cinematographer'
+  'Service': [
+    'Shifting', 'Technician', 'Teacher', 'AC Servicing', 'Driver', 'Cleaner', 'Cook', 'Plumber', 'Electrician'
+  ],
+  'Event': [
+    'Community Center', 'Rooftop', 'Auditorium', 'Decorator', 'Catering', 'Sound', 'Lighting'
   ]
+};
+
+export const SUGGESTED_TAGS: Record<string, string[]> = {
+  'Residential': ['Furnished', 'South Facing', 'Top Floor', 'Generator', 'Gas', 'CCTV', 'Guard', 'Lift', 'Family', 'Bachelor Friendly'],
+  'Commercial': ['Roadside', 'Glass Front', 'Corner Plot', 'Parking', 'Fire Safety', 'Generator', 'Loading Dock'],
+  'Vehicle': ['AC', 'CNG', 'LPG', 'Hybrid', 'Automatic', 'Manual', 'Driver Included', 'Self Drive', 'Sedan', 'SUV'],
+  'Gadget': ['4K', 'Wireless', 'Professional', 'Waterproof', 'Sony', 'Canon', 'Nikon', 'DJI', 'GoPro', 'Accessories Included'],
+  'Skill': ['Wedding', 'Corporate', 'Portrait', 'React', 'Python', 'IELTS', 'Math', 'Physics', 'Plumbing', 'Electrical'],
+  'Service': ['Home Service', 'Hourly', 'Contract', 'Emergency', '24/7', 'Verified'],
+  'Event': ['Rooftop', 'Indoor', 'AC', 'Buffet', 'Sound System', 'Stage', 'Parking']
 };
